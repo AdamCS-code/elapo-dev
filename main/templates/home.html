@@ -1,0 +1,9 @@
+<h2>
+  HOME PAGE
+</h2>
+{% if user.is_authenticated %}
+{{user.first_name}}
+{{user.last_name}}
+{{user.email}}
+{{user.nomor_hp}}
+{% endif %}

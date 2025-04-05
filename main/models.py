@@ -30,7 +30,6 @@ class Customer(models.Model):
     last_name = models.CharField(max_length=25)
     email = models.EmailField(max_length=50)
     nomor_hp = models.CharField(max_length=16)
-    wallet = models.OneToOneField(Wallet, on_delete=models.CASCADE)
     domicile = models.CharField(max_length=100, choices=domicile_choices, default="Domisili kamu dimana", blank=False)
 
 class Worker(models.Model):
@@ -39,6 +38,4 @@ class Worker(models.Model):
     last_name = models.CharField(max_length=25)
     nomor_hp = models.CharField(max_length=16)
     email = models.EmailField(max_length=50)
-    wallet = models.OneToOneField(Wallet, on_delete=models.CASCADE)
     domicile = models.CharField(max_length=100, choices=domicile_choices, default="Domisili kamu dimana", blank=False)
-    rating = models.PositiveSmallIntegerField(choices=[(i, str(i)) for i in range(0, 6)],default=0)

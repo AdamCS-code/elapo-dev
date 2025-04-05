@@ -8,7 +8,8 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.core import serializers
-from .forms import AdminRegistrationForm, LoginForm
+from .forms import AdminRegistrationForm, CustomerRegistrationForm, WorkerRegistrationForm, LoginForm
+
 @login_required(login_url='/login')
 def show_main_page(request):
     context = {}
@@ -84,3 +85,6 @@ def worker_register(request):
     context = {'form': form}
     return render(request, 'worker_register.html', context)
 
+def logout_user(request):
+    logout(request)
+    return redirect('main:home')

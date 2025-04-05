@@ -30,7 +30,7 @@ class AdminRegistrationForm(UserCreationForm):
         label='Nomor HP',
         widget=forms.TextInput(attrs={'class': 'form-input'})
     )
-
+   
     def check_email(self):
         email = self.cleaned_data['email']
         if User.objects.filter(email=email).exists():
@@ -60,7 +60,7 @@ class AdminRegistrationForm(UserCreationForm):
 class WorkerRegistrationForm(UserCreationForm):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'nomor_hp', 'password1', 'password2', 'domicile')
+        fields = ('first_name', 'last_name', 'email', 'nomor_hp', 'password1', 'password2', 'domicile' )
     
     first_name = forms.CharField(
         max_length=69,
@@ -105,12 +105,13 @@ class WorkerRegistrationForm(UserCreationForm):
         user.username= self.cleaned_data['email']
         if commit:
             user.save()
-            Admin.objects.create(
+            Worker.objects.create(
                 user=user,
                 first_name=self.cleaned_data['first_name'],
                 last_name=self.cleaned_data['last_name'],
                 email=self.cleaned_data['email'],
-                nomor_hp=self.cleaned_data['nomor_hp']
+                nomor_hp=self.cleaned_data['nomor_hp'],
+                rating=0
             )
         return user
 
@@ -161,9 +162,10 @@ class CustomerRegistrationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
+        user.username = self.cleaned_data['email']
         if commit:
             user.save()
-            Admin.objects.create(
+            Customer.objects.create(
                 user=user,
                 first_name=self.cleaned_data['first_name'],
                 last_name=self.cleaned_data['last_name'],

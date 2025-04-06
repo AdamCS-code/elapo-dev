@@ -4,5 +4,5 @@ from django.contrib.auth.models import User
 
 class Wallet(models.Model):
     id = models.UUIDField(primary_key=True)
-    user = models.OneToOneField(User)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     saldo = models.DecimalField(max_digits=12, decimal_places=0, default=0)

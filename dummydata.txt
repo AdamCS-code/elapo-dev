@@ -1,0 +1,11 @@
+Product
+(id product_name price description stock) = ('3282910e-54ff-41fe-be6e-4b1a96160145' 'air mineral' '10000' '100' 'minuman aslidari afrika')
+
+ProductCart
+(id cart_id product_id quantity ) = ('45e72a93-6cbc-4951-b57f-2aa076543b09' 'c94f92ab-49bf-475d-85b3-fb2f5846da8f' '3282910e-54ff-41fe-be6e-4b1a96160145' 10)
+
+Cart
+(id created_at customer_id) = ('c94f92ab-49bf-475d-85b3-fb2f5846da8f' datetime.date(2025, 4, 6) 2)
+
+Order
+(id cart_id total created_at status_id) = ('11111111-2222-3333-4444-555555555555' 'c94f92ab-49bf-475d-85b3-fb2f5846da8f' datetime.date(2025, 4, 6) '11111111-1111-1111-1111-111111111111')

@@ -66,13 +66,13 @@ class Command(BaseCommand):
         content_type = ContentType.objects.get_for_model(Order)
         # customer privileges
         privileges = [
-            "set to paid",
-            "set to prepared",
-            "set to ready",
-            "set to delivered",
-            "set to completed",
-            "set to cancelled",
-            "set to reviewed",
+            "set_to_paid",
+            "set_to_prepared",
+            "set_to_ready",
+            "set_to_delivered",
+            "set_to_completed",
+            "set_to_cancelled",
+            "set_to_reviewed",
         ]
 
         customer_privileges = [0, 5, 6]
@@ -99,6 +99,13 @@ class Command(BaseCommand):
                 content_type=content_type
             )
             admin_group.permissions.add(permission)
+
+        permission = Permission.objects.get(
+            codename="add_order",
+            content_type=content_type
+        )
+        
+        customer_group.permissions.add(permission) 
 
         print("setup roles pada order berhasil")
 

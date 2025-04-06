@@ -1,4 +1,4 @@
-from django.http import path    
+from django.urls import path    
 
 app_name = 'delivery'
 

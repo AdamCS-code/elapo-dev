@@ -25,4 +25,3 @@ class Command(BaseCommand):
         )
         customer_group.permissions.add(buy_product_permission)
 
-

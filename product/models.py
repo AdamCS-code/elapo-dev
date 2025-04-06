@@ -3,7 +3,7 @@ from django.db import models
 class Product(models.Model):
     class Meta:
         permissions = [
-            ("buy_product", "cat_buy_product")
+            ("buy_product", "can buy product")
         ]
     id = models.UUIDField(primary_key=True)
     product_name = models.CharField(max_length=69)

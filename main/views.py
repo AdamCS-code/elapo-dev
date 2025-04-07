@@ -18,20 +18,6 @@ def show_main_page(request):
 def show_loggedin_page(request):
     return render(request, 'home.html', context={'user': request.user})
 
-@csrf_exempt
-def admin_register(request):
-    if request.method == 'POST':
-        form = AdminRegistrationForm(request.POST)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Admin berhasil ditambahkan, silahkan login ya')
-            return redirect('main:login')
-        else:
-            messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
-    else:
-        form = AdminRegistrationForm()
-    return render(request, 'admin_register.html', {'form': form})
-
 @csrf_protect
 def login(request):
     if request.method == 'POST':

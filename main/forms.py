@@ -176,10 +176,11 @@ class CustomerRegistrationForm(UserCreationForm):
 
 class LoginForm(AuthenticationForm):
     username = forms.EmailField(
-        widget=forms.EmailInput(attrs={'class': 'form-input'}),
-        label='email'
+        widget=forms.EmailInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'}),
+        label='Email'
     )
     password = forms.CharField(
-        widget=forms.PasswordInput(attrs={'class': 'form-input'})
+        widget=forms.PasswordInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'}),
+        label='Password'
     )
 

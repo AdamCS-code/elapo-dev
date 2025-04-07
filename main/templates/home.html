@@ -1,9 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Home {% endblock title %} 
+
+{% block content %}
 <h2>
   HOME PAGE
 </h2>
-{% if user.is_authenticated %}
-{{user.first_name}}
-{{user.last_name}}
-{{user.email}}
-{{user.nomor_hp}}
-{% endif %}
+<p>
+  {% if user.is_authenticated %}
+    {{user.first_name}}
+    {{user.last_name}}
+    {{user.email}}
+    {{user.nomor_hp}}
+  {% endif %}
+</p>
+{% endblock content %}

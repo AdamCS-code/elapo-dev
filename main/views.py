@@ -9,14 +9,16 @@ from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from django.core import serializers
 from .forms import AdminRegistrationForm, CustomerRegistrationForm, WorkerRegistrationForm, LoginForm
-
+from django.template.loader import render_to_string
 @login_required(login_url='/login')
-def show_main_page(request):
-    context = {}
+def show_main_page(request): 
     return render(request, 'home.html', context={'user': request.user})
 
 def show_loggedin_page(request):
     return render(request, 'home.html', context={'user': request.user})
+
+def show_register(request):
+    return render(request, 'register.html', context={'user': request.user})
 
 @csrf_protect
 def login(request):
@@ -50,10 +52,8 @@ def customer_register(request):
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:
         form = CustomerRegistrationForm()
-
-    context = {'form': form}
-    return render(request, 'customer_register.html', context)
-
+    form_html = render_to_string('register_form.html', {'form': form}, request=request) 
+    return JsonResponse({'form': form_html})
 
 @csrf_exempt
 def worker_register(request):
@@ -61,15 +61,14 @@ def worker_register(request):
         form = WorkerRegistrationForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, 'Worker berhasil ditambahkan, silahkan login ya')
+            messages.success(request, 'Customer berhasil ditambahkan, silahkan login ya')
             return redirect('main:login')
         else:
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:
-        form = WorkerRegistrationForm()
-    
-    context = {'form': form}
-    return render(request, 'worker_register.html', context)
+        form = WorkerRegistrationForm() 
+    form_html = render_to_string('register_form.html', {'form': form}, request=request) 
+    return JsonResponse({'form': form_html})
 
 def logout_user(request):
     logout(request)

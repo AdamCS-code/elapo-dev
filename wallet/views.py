@@ -32,19 +32,20 @@ def topup_wallet(request):
     if not walletAccount:
         return redirect('wallet:login_wallet')
     
+    wallet_account = get_object_or_404(WalletAccount, user=request.user)
     if request.method == 'POST':
         form = TopUpForm(request.POST)
         if form.is_valid():
+            wallet = wallet_account.wallet
             amount = form.cleaned_data['amount']
             wallet.saldo += amount
             wallet.save()
-            messages.success(request, f"Top-up successful! +Rp{amount}")
-            return redirect('wallet_dashboard')
+            return redirect('wallet:show_wallet')
     else:
         form = TopUpForm()
 
     form = render_to_string('form_wallet.html', {'form': form}, request=request)
-    return render(request, 'show_wallet', {'form': form})
+    return render(request, 'show_wallet.html', {'form': form})
 
 @login_required
 @csrf_exempt

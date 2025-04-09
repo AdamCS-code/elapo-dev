@@ -171,6 +171,9 @@ span {
         <p>saldo: {{balance}}</p>
       {% endif %}
       </div>
+      <div>
+        <a href="{% url 'wallet:topup_wallet'%}">Topup</a>
+      </div>
     </div>
     {% endif %}
   </main>

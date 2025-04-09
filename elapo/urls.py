@@ -22,10 +22,10 @@ app_name = 'main'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
-    path('product', include('product.urls')),
-    path('wallet', include('wallet.urls')),
-    path('cart', include('cart.urls')),
-    path('order', include('order.urls')),
-    path('payment', include('payment.urls')),
-    path('delivery', include('delivery.urls'))
+    path('product', include('product.urls', namespace='product')),
+    path('wallet/', include('wallet.urls', namespace='wallet')),
+    path('cart/', include('cart.urls', namespace='cart')),
+    path('order', include('order.urls', namespace='order')),
+    path('payment', include('payment.urls', namespace='payment')),
+    path('delivery', include('delivery.urls', namespace='delivery'))
 ]

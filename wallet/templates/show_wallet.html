@@ -1,8 +1,22 @@
 {% extends 'base.html' %}
-{% block title %}Home {% endblock title %} 
+{% block title %}Wallet {% endblock title %} 
 
 {% block content %}
 {% include 'navbar.html'%}
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'cream': '#fff9ee',
+          'slate': '#585e6c',
+          'taupe': '#beb9ae',
+          'gray': '#e3e3e3'
+        }
+      }
+    }
+  }
+</script>
 <style>
 .aboba ul li {
     top: -9px;
@@ -144,12 +158,23 @@ span {
 
   </div>
 
-  <main class="appMain-content">
-
-
+  <main class="appMain-content flex justify-center">
+    {% if form %}
+    <div id="wallet-form-container" class="w-full max-w-lg">
+      {{ form }} 
+    </div>
+    {% else %}
+    <div id="wallet-content-container" class="w-full max-w-lg">
+      <div>
+        {% if wallet_account %}
+        <p>username : {{wallet_account.user.email}}</p>
+        <p>saldo: {{balance}}</p>
+      {% endif %}
+      </div>
+    </div>
+    {% endif %}
   </main>
   <div class="appMain-right-sidebar flex align-center flex-col ">
-
   </div>
 </div>
 
@@ -195,3 +220,4 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 {% endblock content %}
+

@@ -8,13 +8,13 @@ class OrderStatus(models.Model):
 class Order(models.Model):
     class Meta:
         permissions = [
-            ("set to paid", "can set to paid"),
-            ("set to prepared", "can set to prepared"),
-            ("set to ready", "can set to ready"),
-            ("set to delivered", "can set to delivered"),
-            ("set to completed", "can set to completed"),
-            ("set to cancelled", "can set to cancelled"),
-            ("set to reviewed", "can set to reviewed")
+            ("set_to_paid", "can set to paid"),
+            ("set_to_prepared", "can set to prepared"),
+            ("set_to_ready", "can set to ready"),
+            ("set_to_delivered", "can set to delivered"),
+            ("set_to_completed", "can set to completed"),
+            ("set_to_cancelled", "can set to cancelled"),
+            ("set_to_reviewed", "can set to reviewed")
         ]
     id = models.UUIDField(primary_key=True)
     cart = models.OneToOneField(Cart, on_delete=models.CASCADE)

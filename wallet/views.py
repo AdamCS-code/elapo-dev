@@ -8,6 +8,10 @@ import uuid
 
 @login_required
 def register_wallet(request):
+    walletAccount = WalletAccount.objects.filter(user=request.user)
+    if walletAccount:
+        return redirect('wallet:show_wallet')
+
     if request.method == 'POST':
         form = WalletAccountForm(request.POST)
         if form.is_valid():
@@ -50,7 +54,8 @@ def topup_wallet(request):
 @login_required
 @csrf_exempt
 def login_wallet(request):
-
+    if check_wallet_session(request.session['walletSession']):
+        return redirect('wallet:show_wallet')
     # check if walletAccount is available
     wallet_account = WalletAccount.objects.filter(user_id=request.user.id)
     if (len(wallet_account) == 0):

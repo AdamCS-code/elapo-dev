@@ -1,16 +1,24 @@
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 from .models import Product
-# Create your views here.
+from django.db import connection
 def all_product(request):
-    products = Product.objects.all()
+    products = Product.objects.all() 
     product_json = [
         {
             'id' : product.id,
             'product_name': product.product_name,
             'stock': product.stock,
-            'price': product.price,
+            'price': float(product.price),
             'description': product.description,
         } for product in products
     ]
-    return JsonResponse({'products' : product_json})
+     
+    return JsonResponse(data={'products' : product_json})
+
+def get_product(request):
+    with connection.cursor() as cursor:
+        cursor.execute("select * from product_product")
+        products = cursor.fetchall()
+    return JsonResponse({'products': products})

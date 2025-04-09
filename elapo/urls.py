@@ -22,7 +22,7 @@ app_name = 'main'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
-    path('product', include('product.urls', namespace='product')),
+    path('product/', include('product.urls', namespace='product')),
     path('wallet/', include('wallet.urls', namespace='wallet')),
     path('cart/', include('cart.urls', namespace='cart')),
     path('order', include('order.urls', namespace='order')),

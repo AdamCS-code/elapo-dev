@@ -1,7 +1,5 @@
 <form method="post">
   {% csrf_token %}
-  <a href="{% url 'wallet:login_wallet' %}">login</a>
-  <a href="{% url 'wallet:register_wallet' %}">register</a>
   <div class="space-y-4">
     {% for field in form %}
       <div class="space-y-2">

@@ -238,14 +238,11 @@ function fetchAndDisplayCart() {
   
   cartContainer.innerHTML = '<div class="text-center p-4">Loading cart...</div>';
 
-
   fetch("{% url 'cart:view_cart' id=cart_id %}").then((response) => {return response.json()})
   .then((data) => {
     const cartData = data.product_carts;
     displayCart(cartData, cartContainer);
   });
-
-  
 }
 
 function displayCart(cartItems, container) {
@@ -300,10 +297,8 @@ function displayCart(cartItems, container) {
   `;
   cartContainer.appendChild(cartSummary);
   
-  // Add the cart to the page
   container.appendChild(cartContainer);
   
-  // Add event listener for checkout button
   const checkoutBtn = cartSummary.querySelector('.checkout-btn');
   checkoutBtn.addEventListener('click', function() {
     checkout();
@@ -403,14 +398,13 @@ function updateCartItemQuantity(itemId, newQuantity) {
   }
 }
 
-function removeCartItem(itemId) {
-  console.log(`Removing cart item ${itemId}`);
+function removeCartItem(productcart_id) {
+  console.log(`Removing cart item ${productcart_id}`);
   
-  const cartItem = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
+  const cartItem = document.querySelector(`.cart-item[data-item-id="${productcart_id}"]`);
   if (cartItem) {
     cartItem.remove();
     
-
     const remainingItems = document.querySelectorAll('.cart-item');
     if (remainingItems.length === 0) {
       const cartContainer = document.querySelector('.cart-container');
@@ -418,27 +412,21 @@ function removeCartItem(itemId) {
         cartContainer.innerHTML = '<div class="text-center p-4">Your cart is empty.</div>';
       }
     }
-    
-    // Example of API call (commented out)
-    /*
-    fetch('{% url "cart:delete_product_cart" %}', {
+    let url = `delete_product_in_cart`
+    fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-CSRFToken': getCookie('csrftoken')
       },
       body: JSON.stringify({
-        item_id: itemId
+        productcart_id: productcart_id
       })
     })
-    .then(response => response.json())
+    .then(response => {return response.json()})
     .then(data => {
-      if (data.success) {
-        // Refresh cart
         fetchAndDisplayCart();
-      }
-    });
-    */
+    })
   }
 }
 

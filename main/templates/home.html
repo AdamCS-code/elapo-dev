@@ -192,7 +192,7 @@
                       step="1"
                       required
                   >
-                  <p id="errorMessage" class="mt-2 text-sm text-red-600 hidden"></p>
+                  <p id="errorMessage" class="mt-2 text-sm text-cream hidden"></p>
               </div>
               
               <!-- Modal footer -->
@@ -219,8 +219,8 @@
 
 {% block script%}
 <script>
+let contol;
 document.addEventListener("DOMContentLoaded", () => {
-
   fetchAndDisplayProducts();
 });
 
@@ -377,20 +377,26 @@ function addToCart(productId) {
               console.log('Submission successful');
               integerInput.value = '';
               modalOverlay.classList.add('hidden');
-              console.log(response.json())
-              return response.json()
           } else {
-              showError('Submission failed. Please try again.');
+              console.log('Submission failed. Please try again.');
           }
+          return response.json()
+      })
+      .then(data => {
+        if (data.status != 200){
+          showError("Submission failed. Please try again: " + data.message); 
+          integerInput.value = '';
+        }
       })
       .catch(error => {
-          showError('An error occurred. Please try again.');
           console.error('Error:', error);
       });
   });  
 }
 function showError(errorMessage) {
-  console.log(errorMessage);
+  const showMessage = document.getElementById('errorMessage')
+  showMessage.classList.remove('hidden');
+  showMessage.innerHTML = errorMessage;
 }
 function getCookie(name) {
   let cookieValue = null;

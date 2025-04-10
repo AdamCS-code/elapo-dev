@@ -12,18 +12,34 @@ import uuid
 @require_POST
 def add_cart(request, id):
     data = json.loads(request.body)
-
     return
 
 @login_required
+@require_POST
 @permission_required('cart.delete_cart')
-def delete_cart(request, id):
+def delete_cart(request):
+    data = json.loads(request.body)
+    id = data['cart_id']
     try:
-        cart = Cart.objects.get(cart_id=id)
+        cart = Cart.objects.get(pk=id)
         cart.delete()
+        print('deleted')
     except Cart.DoesNotExist:
-        return JsonResponse({'status': 'failed to delete, cannot find cart'})
-    return JsonResponse({'status': 'success to delete cart'})
+        return JsonResponse({'error': 'failed to delete, cannot find cart'}, status=400)
+    return JsonResponse({'message': 'success to delete cart'}, status=200)
+
+@login_required
+@require_POST
+@permission_required('cart.delete_productcart')
+def delete_productcart(request):
+    data = json.loads(request.body)
+    product_cart_id = data['productcart_id']
+    try:
+        product_cart = ProductCart.objects.get(id=product_cart_id)
+        product_cart.delete()
+    except ProductCart.DoesNotExist:
+        return JsonResponse({'error': 'product cart is not found'}, status=400)
+    return JsonResponse({'success': 'delete product'}, status=200)
 
 @login_required
 def show_cart(request):
@@ -84,10 +100,10 @@ def add_product_to_cart(request):
         product = Product.objects.get(pk=product)
 
     except Product.DoesNotExist:
-        return JsonResponse({'error': 'Product does not exist'}, status=400)
+        return JsonResponse({'message': 'Product does not exist'}, status=400)
 
     if amount < 1:
-        return JsonResponse({'error': 'Amount has to be positive integer'}, status=400) 
+        return JsonResponse({'message': 'Amount has to be positive integer'}, status=400) 
 
     customer = Customer.objects.get(user=request.user)
 
@@ -101,7 +117,7 @@ def add_product_to_cart(request):
     print(product_quantity)
 
     if product_quantity > product.stock:
-        return JsonResponse({'error': 'Out of stock'}, status=400)
+        return JsonResponse({'message': 'Out of stock'}, status=400)
 
     product_cart.quantity = product_quantity 
     product_cart.save()

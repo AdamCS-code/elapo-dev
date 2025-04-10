@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from .models import Admin, Customer, Worker, domicile_choices
 from django.forms import ModelForm
 
@@ -106,13 +106,15 @@ class WorkerRegistrationForm(UserCreationForm):
         user.username = self.cleaned_data['email']
         if commit:
             user.save()
-            Worker.objects.create(
+            worker= Worker.objects.create(
                 user=user,
                 first_name=self.cleaned_data['first_name'],
                 last_name=self.cleaned_data['last_name'],
                 email=self.cleaned_data['email'],
                 nomor_hp=self.cleaned_data['nomor_hp']
             )
+            worker.user.groups.set([Group.Objects.get(name='Worker')])
+
         return user
 
 class CustomerRegistrationForm(UserCreationForm):
@@ -164,13 +166,14 @@ class CustomerRegistrationForm(UserCreationForm):
         user.username = self.cleaned_data['email']
         if commit:
             user.save()
-            Customer.objects.create(
+            customer = Customer.objects.create(
                 user=user,
                 first_name=self.cleaned_data['first_name'],
                 last_name=self.cleaned_data['last_name'],
                 email=self.cleaned_data['email'],
                 nomor_hp=self.cleaned_data['nomor_hp']
             )
+            customer.groups.set([Group.objects.get('Customer')])
         return user
 
 class LoginForm(AuthenticationForm):

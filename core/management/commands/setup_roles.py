@@ -31,7 +31,7 @@ class Command(BaseCommand):
         
         content_type = ContentType.objects.get_for_model(Cart) 
 
-        privileges = ['add_cart', 'delete_cart', 'change_cart', 'view_cart']
+        privileges = ['add_cart', 'delete_cart', 'change_cart', 'view_cart', 'checkout_cart']
         for privilege in privileges:
             permission = Permission.objects.get(
                 codename=privilege,
@@ -106,6 +106,9 @@ class Command(BaseCommand):
         )
         
         customer_group.permissions.add(permission) 
+        customer_group.save()
+        worker_group.save()
+        admin_group.save()
 
         print("setup roles pada order berhasil")
 

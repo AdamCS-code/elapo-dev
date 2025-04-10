@@ -3,6 +3,8 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import Product
 from django.db import connection
+
+@login_required
 def all_product(request):
     products = Product.objects.all() 
     product_json = [

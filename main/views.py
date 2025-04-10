@@ -7,9 +7,9 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
-from django.core import serializers
 from .forms import AdminRegistrationForm, CustomerRegistrationForm, WorkerRegistrationForm, LoginForm
 from django.template.loader import render_to_string
+
 @login_required(login_url='/login')
 def show_main_page(request): 
     return render(request, 'home.html', context={'user': request.user})

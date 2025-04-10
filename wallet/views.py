@@ -65,6 +65,7 @@ def login_wallet(request):
     wallet_account = get_object_or_404(WalletAccount, user=request.user)
     
     if wallet_account.login_attempts >= MAX_ATTEMPTS:
+        wallet_account.reset_attempts_if_needed()
         return render(request, 'locked.html')
 
     if request.method == 'POST':

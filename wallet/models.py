@@ -23,12 +23,12 @@ class WalletAccount(models.Model):
             self.save()
 
 class Wallet(models.Model):
-    id = models.UUIDField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     walletAccount = models.OneToOneField(WalletAccount, on_delete=models.CASCADE)
     saldo = models.DecimalField(max_digits=12, decimal_places=0, default=0)
 
 class WalletSession(models.Model):
-    id = models.UUIDField(primary_key=True)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     walletAccount = models.OneToOneField(WalletAccount, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
     revoked_at = models.DateTimeField()

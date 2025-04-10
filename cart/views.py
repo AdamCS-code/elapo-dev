@@ -77,32 +77,35 @@ def edit_product_in_cart(request):
 @require_POST
 @permission_required('cart.add_productcart', 'cart.change_cart','cart.view_cart')
 def add_product_to_cart(request):
-    product = request.POST.get('product_id')
-    amount = request.POST.get('amount')
-
+    data = json.loads(request.body)
+    product = data['product_id']
+    amount = int(data['amount'])
     try:
-        product = Product.objects.get(pk=uuid.UUID(product))
+        product = Product.objects.get(pk=product)
 
     except Product.DoesNotExist:
-        return JsonResponse({'status': 'Product does not exist'})
+        return JsonResponse({'error': 'Product does not exist'}, status=400)
 
     if amount < 1:
-        return JsonResponse({'status': 'Amount has to be positive integer'}) 
+        return JsonResponse({'error': 'Amount has to be positive integer'}, status=400) 
 
     customer = Customer.objects.get(user=request.user)
+
     cart = Cart.objects.filter(customer=customer, is_checked_out=False).first()
     if not cart:
         cart = Cart.objects.create(customer=customer)
     product_cart, created = ProductCart.objects.get_or_create(cart=cart, product=product)
+    print(product_cart)
     product_quantity = product_cart.quantity
     product_quantity += amount
+    print(product_quantity)
 
     if product_quantity > product.stock:
-        return JsonResponse({'status': 'Out of stock'})
+        return JsonResponse({'error': 'Out of stock'}, status=400)
 
     product_cart.quantity = product_quantity 
     product_cart.save()
-    return JsonResponse({'status': 'success to add product'})
+    return JsonResponse({'message': 'success'}, status=200)
 
 @login_required
 def change_productcart(request):

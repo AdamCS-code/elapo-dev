@@ -346,17 +346,11 @@ function addToCart(productId) {
     errorMessage.classList.add('hidden');
   });
 
-  modalOverlay.addEventListener('click', function(){
-    integerInput.value = '';
-    modalOverlay.classList.add('hidden');
-    errorMessage.classList.add('hidden');
-  });
-
   integerForm.addEventListener('submit', (e) => {
       e.preventDefault();
+      console.log('submitted')
       
       const value = integerInput.value.trim();
-      
      
       if (!value) {
           showError('Please enter a value');
@@ -368,19 +362,23 @@ function addToCart(productId) {
           return;
       }
     
-      const url = 'https://your-api-endpoint.com/submit'; // Replace with your actual URL
+      const url = "{% url 'cart:add_product_cart' %}"; 
       
       fetch(url, {
           method: 'POST',
           headers: {
-              'Content-Type': 'application/json'
+              "Content-Type": "application/x-www-form-urlencoded",
+              "X-CSRFToken": getCookie("csrftoken")
           },
-          body: JSON.stringify({ value: parseInt(value) })
+          body: JSON.stringify({ amount: parseInt(value), product_id: productId })
       })
       .then(response => {
           if (response.ok) {
               console.log('Submission successful');
-              closeModal();
+              integerInput.value = '';
+              modalOverlay.classList.add('hidden');
+              console.log(response.json())
+              return response.json()
           } else {
               showError('Submission failed. Please try again.');
           }
@@ -391,7 +389,9 @@ function addToCart(productId) {
       });
   });  
 }
-
+function showError(errorMessage) {
+  console.log(errorMessage);
+}
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {

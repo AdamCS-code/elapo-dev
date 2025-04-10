@@ -234,17 +234,18 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 function fetchAndDisplayCart() {
-  const cartContainer = document.getElementById('all-product'); // Using the same container as before
+  const cartContainer = document.getElementById('all-product');
   
   cartContainer.innerHTML = '<div class="text-center p-4">Loading cart...</div>';
 
-  let cartData;
 
-  fetch("{% url 'cart:view_cart' id=cart_id %}").then((response) => {return response.json()}).then((data) => {
-    cartData = data.product_carts;
+  fetch("{% url 'cart:view_cart' id=cart_id %}").then((response) => {return response.json()})
+  .then((data) => {
+    const cartData = data.product_carts;
+    displayCart(cartData, cartContainer);
   });
 
-  displayCart(cartData, cartContainer);
+  
 }
 
 function displayCart(cartItems, container) {

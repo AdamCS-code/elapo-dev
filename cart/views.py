@@ -7,6 +7,7 @@ from product.models import Product
 from main.models import Customer
 import json
 import uuid
+
 @login_required
 @require_POST
 def add_cart(request, id):

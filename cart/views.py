@@ -1,18 +1,12 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required, permission_required
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_POST
 from .models import Cart, ProductCart
 from product.models import Product
+from order.models import Order, OrderStatus
 from main.models import Customer
 import json
-import uuid
-
-@login_required
-@require_POST
-def add_cart(request, id):
-    data = json.loads(request.body)
-    return
 
 @login_required
 @require_POST
@@ -42,11 +36,15 @@ def delete_productcart(request):
     return JsonResponse({'success': 'delete product'}, status=200)
 
 @login_required
+@permission_required('cart.view_productcart')
 def show_cart(request):
     cart = Cart.objects
     try:
         customer = Customer.objects.get(user=request.user)
         cart = cart.filter(customer=customer, is_checked_out=False).first()
+        
+        if not cart:
+            cart = Cart.objects.create(customer=customer, is_checked_out=False)
     except Customer.DoesNotExist:
         return JsonResponse({'status': 'failed to access cart page, you are not customer'})
     return render(request, 'show_cart.html', context={'cart_id': str(cart.id)})
@@ -54,6 +52,28 @@ def show_cart(request):
 @login_required
 @permission_required("cart.checkout_cart")
 def checkout_cart(request):
+    data = json.loads(request.body)
+    cart_id = data['cart_id']
+    total = data['total']
+    print(data)
+    try:
+        status = OrderStatus.objects.filter(status='not paid').first()
+    except OrderStatus.DoesNotExist:
+        return JsonResponse({'message': 'fail'})
+    
+    try:
+        cart = Cart.objects.get(id=cart_id)
+        cart.is_checked_out = True
+        cart.save()
+    except Cart.DoesNotExist:
+        return JsonResponse({'message': 'fail'})
+    
+    Order.objects.create(
+        cart=cart,
+        status_id=status.id,
+        total=total
+    )
+
     return JsonResponse({'status': 'success'})
 
 @login_required
@@ -87,7 +107,24 @@ def view_cart(request, id):
 @login_required
 @permission_required("cart.change_cart")
 def edit_product_in_cart(request):
-    return JsonResponse({})
+    data = json.loads(request.body)
+    try:
+        product_cart = data['product_cart_id']
+        product_cart = ProductCart.objects.get(id=product_cart)
+    except ProductCart.DoesNotExist:
+        JsonResponse({'message': 'product cart is not found'})
+
+    product_cart_quantity = int(data['amount'])
+
+    print(product_cart_quantity)
+    
+    if product_cart_quantity == 0:
+        product_cart.delete()
+    elif product_cart_quantity < 0 or product_cart_quantity > product_cart.product.stock:
+        return JsonResponse({'message': f'product quantity must be greater than 0 and less than {product_cart.product.stock}'}, status=400)
+    product_cart.quantity = product_cart_quantity
+    product_cart.save()
+    return JsonResponse({"product_cart": product_cart.id, 'message': 'success'}, status=200)
 
 @login_required
 @require_POST
@@ -122,7 +159,3 @@ def add_product_to_cart(request):
     product_cart.quantity = product_quantity 
     product_cart.save()
     return JsonResponse({'message': 'success'}, status=200)
-
-@login_required
-def change_productcart(request):
-    return

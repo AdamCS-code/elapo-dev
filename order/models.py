@@ -20,6 +20,6 @@ class Order(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     cart = models.OneToOneField(Cart, on_delete=models.CASCADE)
     total = models.DecimalField(max_digits=12, decimal_places=0, default=0)
-    created_at = models.DateField()
+    created_at = models.DateField(auto_now=True)
     status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
 

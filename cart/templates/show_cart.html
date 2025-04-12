@@ -293,7 +293,7 @@ function displayCart(cartItems, container) {
       <span>Total</span>
       <span class="cart-total">${formatRupiah(totalPrice)}</span>
     </div>
-    <button class="checkout-btn">Proceed to Checkout</button>
+    <button class="checkout-btn" id="checkout-btn-info" total-cart="${totalPrice}">Proceed to Checkout</button>
   `;
   cartContainer.appendChild(cartSummary);
   
@@ -362,7 +362,6 @@ function formatRupiah(angka) {
 
 function updateCartItemQuantity(itemId, newQuantity) {
   console.log(`Updating cart item ${itemId} to quantity ${newQuantity}`);
-
   
   const cartItem = document.querySelector(`.cart-item[data-item-id="${itemId}"]`);
   if (cartItem) {
@@ -370,12 +369,9 @@ function updateCartItemQuantity(itemId, newQuantity) {
     const decrementBtn = cartItem.querySelector('.decrement-btn');
     
     quantityElement.textContent = newQuantity;
-    
 
     decrementBtn.disabled = newQuantity <= 1;
-    
-    // Example of API call (commented out)
-    /*
+
     fetch('{% url "cart:edit_product_cart" %}', {
       method: 'POST',
       headers: {
@@ -383,18 +379,17 @@ function updateCartItemQuantity(itemId, newQuantity) {
         'X-CSRFToken': getCookie('csrftoken')
       },
       body: JSON.stringify({
-        item_id: itemId,
-        quantity: newQuantity
+        product_cart_id: itemId,
+        amount: newQuantity
       })
     })
-    .then(response => response.json())
+    .then(response => {
+      return response.json()
+    })
     .then(data => {
-      if (data.success) {
-        // Refresh cart to show updated values from server
+        console.log(data.message);
         fetchAndDisplayCart();
-      }
     });
-    */
   }
 }
 
@@ -432,8 +427,26 @@ function removeCartItem(productcart_id) {
 
 function checkout() {
   console.log('Proceeding to checkout');
+  const cart_id = "{{cart_id}}";
+  const total_cart = document.getElementById('checkout-btn-info').getAttribute('total-cart');
+  let url = `checkout_cart`;
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken')
+      },
+      body: JSON.stringify({
+        cart_id: cart_id,
+        total: total_cart
 
-  alert('Proceeding to checkout...');
+      })
+    })
+    .then(response => {return response.json()})
+    .then(data => {
+        fetchAndDisplayCart();
+    })
+    
 
 }
 

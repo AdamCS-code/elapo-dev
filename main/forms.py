@@ -3,6 +3,8 @@ from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User, Group
 from .models import Admin, Customer, Worker, domicile_choices
 from django.forms import ModelForm
+from django_recaptcha.fields import ReCaptchaField
+from django_recaptcha.widgets import ReCaptchaV2Checkbox
 
 class AdminRegistrationForm(UserCreationForm):
     class Meta:
@@ -30,6 +32,8 @@ class AdminRegistrationForm(UserCreationForm):
         label='Nomor HP',
         widget=forms.TextInput(attrs={'class': 'form-input'})
     )
+
+    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
    
     def check_email(self):
         email = self.cleaned_data['email']
@@ -88,6 +92,8 @@ class WorkerRegistrationForm(UserCreationForm):
         label='domisili',
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
     )
+
+    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
 
     def check_email(self):
         email = self.cleaned_data['email']
@@ -149,6 +155,8 @@ class CustomerRegistrationForm(UserCreationForm):
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
     )
 
+    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
+
     def check_email(self):
         email = self.cleaned_data['email']
         if User.objects.filter(email=email).exists():
@@ -177,6 +185,8 @@ class CustomerRegistrationForm(UserCreationForm):
         return user
 
 class LoginForm(AuthenticationForm):
+    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
+
     username = forms.EmailField(
         widget=forms.EmailInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'}),
         label='Email'

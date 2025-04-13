@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password, check_password
 from django.utils import timezone
 from datetime import timedelta
+from main.models import Customer, Admin, Worker
+from order.models import Order
 import uuid
 
 class WalletAccount(models.Model):
@@ -42,3 +44,13 @@ class WalletSession(models.Model):
         if timezone.now() >= self.revoked_at:
             return True
         return False
+
+class OrderPayment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    walletAccount = models.ForeignKey(WalletAccount, on_delete=models.CASCADE)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now=True)
+
+

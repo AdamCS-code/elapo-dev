@@ -5,7 +5,73 @@
 {% endblock style %}
 
 {% block content %}
-<p>order's page</p>
+<div class="orders-dashboard-container">
+    <h1 class="text-2xl font-bold mb-4">Your Orders</h1>
+    
+    {% if messages %}
+    <div class="messages mb-4">
+        {% for message in messages %}
+        <div class="{% if message.tags == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %} p-3 rounded mb-2">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Status Tabs -->
+    <div class="status-tabs mb-6">
+        <div class="flex border-b">
+            {% for status in statuses %}
+            <a href="?status={{ status.id }}" 
+               class="px-4 py-2 {% if status.id == active_status_id %}border-b-2 border-blue-500 text-blue-600 font-medium{% else %}text-gray-600 hover:text-gray-800{% endif %}">
+                {{ status.status }}
+                {% if status_counts|get_item:status.id %}
+                <span class="ml-1 bg-gray-200 text-gray-700 px-2 py-0.5 rounded-full text-xs">
+                    {{ status_counts|get_item:status.id }}
+                </span>
+                {% endif %}
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    
+    <!-- Orders List -->
+    <div class="orders-list">
+        {% if active_orders %}
+            <div class="grid gap-4">
+                {% for order in active_orders %}
+                <div class="border rounded p-4 bg-white shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="font-medium">Order #{{ order.order_id|slice:":8" }}</p>
+                            <p>Total: ${{ order.total }}</p>
+                            <p>Date: {{ order.created_at }}</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <a href="{% url 'order:order_detail' order.order_id %}" class="bg-blue-500 hover:bg-blue-600 text-white py-1 px-3 rounded">
+                                View Details
+                            </a>
+                            
+                            {% if order.can_be_cancelled %}
+                            <form method="post" action="{% url 'order:cancel_order' order.order_id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="bg-red-500 hover:bg-red-600 text-white py-1 px-3 rounded">
+                                    Cancel Order
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-8 bg-gray-50 rounded">
+                <p class="text-gray-600">You don't have any orders with this status.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
 {% endblock content %}
 
 {% block script %}

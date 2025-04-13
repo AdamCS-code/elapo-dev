@@ -1,0 +1,85 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="order-detail-container max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold">Order #{{ order.order_id|slice:":8" }}</h1>
+        <div class="flex items-center">
+            <span class="font-medium mr-2">Status:</span>
+            <span class="px-3 py-1 rounded 
+                {% if order.status.status == 'cancelled' %}bg-red-100 text-red-800
+                {% elif order.status.status == 'completed' or order.status.status == 'delivered' %}bg-green-100 text-green-800
+                {% elif order.status.status == 'paid' %}bg-blue-100 text-blue-800
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                {{ order.status }}
+            </span>
+        </div>
+    </div>
+
+    <div class="bg-gray-50 p-4 rounded mb-6">
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <p class="text-gray-600">Order Date</p>
+                <p class="font-medium">{{ order.created_at }}</p>
+            </div>
+            <div>
+                <p class="text-gray-600">Total Amount</p>
+                <p class="font-medium">${{ order.total }}</p>
+            </div>
+        </div>
+    </div>
+
+    <h2 class="text-xl font-semibold mb-4">Order Items</h2>
+    <div class="bg-white shadow overflow-hidden rounded border">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subtotal</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for item in products %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ item.product.product_name }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${{ item.product.price }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ item.quantity }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${{ item.product.price|floatformat:0|stringformat:'s'|add:'0'|mult:item.quantity }}</div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot class="bg-gray-50">
+                <tr>
+                    <td colspan="3" class="px-6 py-3 text-right font-medium">Total:</td>
+                    <td class="px-6 py-3 font-medium">${{ order.total }}</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+
+    <div class="mt-6 flex justify-between">
+        <a href="{% url 'order_list' %}" class="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded">
+            Back to Orders
+        </a>
+        
+        {% if order.can_be_cancelled %}
+        <form method="post" action="{% url 'cancel_order' order.order_id %}">
+            {% csrf_token %}
+            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded">
+                Cancel Order
+            </button>
+        </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

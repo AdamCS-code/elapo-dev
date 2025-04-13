@@ -23,3 +23,7 @@ class Order(models.Model):
     created_at = models.DateField(auto_now=True)
     status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
 
+    @property
+    def can_be_cancelled(self):
+        cancellable_statuses = ['not paid', 'paid', 'prepared']
+        return self.status.status.lower() in cancellable_statuses

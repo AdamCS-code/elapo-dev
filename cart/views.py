@@ -148,12 +148,12 @@ def add_product_to_cart(request):
     if not cart:
         cart = Cart.objects.create(customer=customer)
     product_cart, created = ProductCart.objects.get_or_create(cart=cart, product=product)
-    print(product_cart)
     product_quantity = product_cart.quantity
     product_quantity += amount
-    print(product_quantity)
 
     if product_quantity > product.stock:
+        if product_cart.quantity <= 0:
+            product_cart.delete()
         return JsonResponse({'message': 'Out of stock'}, status=400)
 
     product_cart.quantity = product_quantity 

@@ -12,6 +12,7 @@ from django.template.loader import render_to_string
 
 @login_required(login_url='/login')
 def show_main_page(request): 
+    print(request.user.customer)
     return render(request, 'home.html', context={'user': request.user})
 
 def show_loggedin_page(request):

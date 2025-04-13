@@ -54,9 +54,12 @@ def topup_wallet(request):
 @login_required
 @csrf_exempt
 def login_wallet(request):
-    if check_wallet_session(request.session['walletSession']):
-        return redirect('wallet:show_wallet')
-    # check if walletAccount is available
+    try:
+        if check_wallet_session(request.session['walletSession']):
+            return redirect('wallet:show_wallet')
+    except:
+        request.session['walletSession'] = ''
+     # check if walletAccount is available
     wallet_account = WalletAccount.objects.filter(user_id=request.user.id)
     if (len(wallet_account) == 0):
         return redirect('wallet:register_wallet')
@@ -113,6 +116,10 @@ def check_wallet_session(sessionId):
         else:
             wallet.delete()
             return None
+
+    except WalletSession.DoesNotExist:
+        return None
+    except KeyError:
+        return None
     except:
         return None
-        

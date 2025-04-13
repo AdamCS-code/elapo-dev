@@ -332,7 +332,6 @@ function createCartItem(item) {
     <button class="remove-item-btn">×</button>
   `;
   
-  // Add event listeners for the buttons
   const decrementBtn = cartItem.querySelector('.decrement-btn');
   const incrementBtn = cartItem.querySelector('.increment-btn');
   const removeBtn = cartItem.querySelector('.remove-item-btn');
@@ -444,10 +443,9 @@ function checkout() {
     })
     .then(response => {return response.json()})
     .then(data => {
+      location.reload();
         fetchAndDisplayCart();
     })
-    
-
 }
 
 function getCookie(name) {

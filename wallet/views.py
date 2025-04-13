@@ -28,7 +28,7 @@ def update_product(cart):
     product_carts = ProductCart.objects.filter(cart=cart)
     for product_cart in product_carts:
         product_cart.product.stock -= product_cart.quantity
-        product_cart.save()
+        product_cart.product.save()
 
 def update_order_status(order, to_status):
     to_status = OrderStatus.objects.get(pk=to_status)

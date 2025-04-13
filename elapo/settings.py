@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'payment',
     'delivery',
     'core',
+    'django_recaptcha',
 ]
 
 MIDDLEWARE = [
@@ -128,3 +129,6 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+RECAPTCHA_PUBLIC_KEY = '6LeyMhcrAAAAAMdB972XAU8iyfyw76W5bMmPgX7E'
+RECAPTCHA_PRIVATE_KEY = '6LeyMhcrAAAAAI1maakIABNPyQbxPPjXqQ8RnOri'

@@ -53,8 +53,7 @@ def customer_register(request):
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:
         form = CustomerRegistrationForm()
-    form_html = render_to_string('register_form.html', {'form': form}, request=request) 
-    return JsonResponse({'form': form_html})
+    return render(request, 'register_customer.html',{'form': form})
 
 @csrf_exempt
 def worker_register(request):
@@ -68,8 +67,7 @@ def worker_register(request):
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:
         form = WorkerRegistrationForm() 
-    form_html = render_to_string('register_form.html', {'form': form}, request=request) 
-    return JsonResponse({'form': form_html})
+    return render(request, 'register_customer.html',{'form': form})
 
 def logout_user(request):
     logout(request)

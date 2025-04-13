@@ -48,9 +48,8 @@ class WalletSession(models.Model):
 class OrderPayment(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     walletAccount = models.ForeignKey(WalletAccount, on_delete=models.CASCADE)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
-    worker = models.ForeignKey(Worker, on_delete=models.CASCADE)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    worker = models.ForeignKey(Worker, on_delete=models.CASCADE, null=True)
+    order = models.OneToOneField(Order, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
 
 

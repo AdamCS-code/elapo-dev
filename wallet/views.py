@@ -1,11 +1,133 @@
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
-from .models import WalletAccount, Wallet, WalletSession
-from .forms import WalletAccountForm, WalletForm, LoginWalletForm, TopUpForm
+from .models import WalletAccount, Wallet, WalletSession, OrderPayment
+from .forms import WalletAccountForm, WalletForm, LoginWalletForm, TopUpForm, PaymentForm 
+from order.models import Order, OrderStatus
+from cart.models import ProductCart, Cart
+from product.models import Product
 from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 import uuid
 
+stack = list()
+NOT_PAID_STATUS_ID = '11111111111111111111111111111111'
+PAID_STATUS_ID = '22222222222222222222222222222222'
+PREPARED_STATUS_ID = '33333333333333333333333333333333'
+READY_STATUS_ID = '44444444444444444444444444444444'
+DELIVERED_STATUS_ID = '55555555555555555555555555555555'
+COMPLETED_STATUS_ID = '66666666666666666666666666666666'
+REVIEWED_STATUS_ID = '77777777777777777777777777777777'
+CANCELLED_STATUS_ID = '88888888888888888888888888888888'
+
+def update_wallet_balance(wallet, amount):
+    wallet.saldo = amount
+    wallet.save()
+
+def update_product(cart):
+    product_carts = ProductCart.objects.filter(cart=cart)
+    for product_cart in product_carts:
+        product_cart.product.stock -= product_cart.quantity
+        product_cart.save()
+
+def update_order_status(order, to_status):
+    to_status = OrderStatus.objects.get(pk=to_status)
+    order.status = to_status
+    order.save()
+
+def order_detail(id):
+    print(id)
+    try:
+        order = Order.objects.get(pk=id)
+        product_carts = ProductCart.objects.filter(cart=order.cart)
+
+        product_carts_json = [
+            {
+                'product' : {
+                    'product_id': product_cart.product.id,
+                    'product_name': product_cart.product.product_name,
+                    'product_stock': product_cart.product.stock,
+                    'product_price': product_cart.product.price,
+                    'product_description': product_cart.product.description
+                },
+                'id': product_cart.id,
+                'quantity': product_cart.quantity,
+            } for product_cart in product_carts
+        ]
+        context = {
+            'order': order,
+            'cart_products': product_carts_json,
+            'can_cancel': str(order.status.status) in [
+                'not paid',
+                'paid',
+            ]
+        }
+        return context
+    except:
+        return None
+
+@login_required
+def show_payment(request, id):
+    customer = request.user.customer
+    context = order_detail(id)
+    if not context:
+        return JsonResponse({'message': 'fail because order not found'}, status=400)
+    return render(request, 'payment_order.html', context) 
+
+@csrf_exempt
+@login_required
+def pay_order(request, id):
+        customer = request.user.customer
+        order = Order.objects.get(pk=id)
+        walletAccount = WalletAccount.objects.get(user=request.user)
+        wallet = Wallet.objects.get(walletAccount=walletAccount)
+
+        # check apakah sudah terautentikasi
+        try:
+            walletSessionId = request.session['walletSession']
+        except KeyError:
+            walletSessionId = ''
+
+        if check_wallet_session(walletSessionId) != walletAccount:
+            # login dulu, kembalikan ke halaman ini 
+            stack.append(('order:pay_order', id))
+            redirect('wallet:login_wallet')
+        
+        if order.cart.customer != customer:
+            return JsonResponse({'message': 'fail because you are not the one who order it, sorry'}, status=400)
+        
+
+        orderPayment, _ = OrderPayment.objects.get_or_create(order=order, walletAccount=walletAccount)
+        if request.method == 'POST':
+            form = PaymentForm(request.POST)
+            if form.is_valid():
+
+                pin = form.cleaned_data['pin']
+
+                walletAccount.reset_attempts_if_needed()
+
+                if walletAccount.login_attempts > 3:
+                    return JsonResponse({'message': 'you don\'t any attempt left, wait 10 minutes'})
+
+                if walletAccount.check_pin(pin):
+                    # check apakah uang pengguna cukup
+                    if order.total > wallet.saldo:
+                        return JsonResponse({'message': 'fail because you don\'t have enough balance'})
+                    else:
+                        update_wallet_balance(wallet, wallet.saldo - order.total)
+                        update_product(order.cart)
+                        update_order_status(order, PAID_STATUS_ID)
+                        return redirect('order:order_detail', id=order.id)
+
+            else:
+                return JsonResponse({'message': 'you entered wrong password'})
+        else:
+            form = PaymentForm()
+            form = render_to_string('form_wallet.html', {'form': form}, request)
+        return render(request, 'payment_order.html', context={'form': form, 'order': order})
+
+
+@csrf_exempt
 @login_required
 def register_wallet(request):
     walletAccount = WalletAccount.objects.filter(user=request.user)
@@ -29,6 +151,7 @@ def register_wallet(request):
     form = render_to_string('form_wallet.html', {'form': form}, request=request) 
     return render(request, 'show_wallet.html', {'form': form})
 
+@csrf_exempt
 @login_required
 def topup_wallet(request):
     walletAccount = check_wallet_session(request.session['walletSession'])
@@ -37,13 +160,14 @@ def topup_wallet(request):
         return redirect('wallet:login_wallet')
     
     wallet_account = get_object_or_404(WalletAccount, user=request.user)
+    wallet = wallet_account.wallet
+
     if request.method == 'POST':
         form = TopUpForm(request.POST)
         if form.is_valid():
-            wallet = wallet_account.wallet
             amount = form.cleaned_data['amount']
-            wallet.saldo += amount
-            wallet.save()
+
+            update_wallet_balance(wallet, wallet.saldo + amount)
             return redirect('wallet:show_wallet')
     else:
         form = TopUpForm()
@@ -80,6 +204,10 @@ def login_wallet(request):
             wallet_session = WalletSession.objects.create(id=uuid.uuid4(),walletAccount=wallet_account)
             wallet_session.save()
             request.session['walletSession'] = str(wallet_session.id)
+            if len(stack) > 0:
+                url = stack.pop()
+                redirect(url[0], id=url[1])
+                
             return redirect('wallet:show_wallet')
         else:
             wallet_account.login_attempts += 1
@@ -101,7 +229,11 @@ def wallet_dashboard(request):
     wallet_account = get_object_or_404(WalletAccount, user=request.user)
     wallet = get_object_or_404(Wallet, walletAccount=wallet_account)
 
+    unpaid_orders = Order.objects.filter(cart__customer=request.user.customer, status__id = NOT_PAID_STATUS_ID).order_by('created_at')
+    paid_orders = OrderPayment.objects.filter(order__cart__customer=request.user.customer).order_by('created_at')
     context = {
+        'payment_history': paid_orders,
+        'pending_orders': unpaid_orders,
         'balance': wallet.saldo,
         'wallet_account': wallet_account,
     }

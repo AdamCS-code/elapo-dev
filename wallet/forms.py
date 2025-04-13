@@ -60,3 +60,10 @@ class TopUpForm(forms.Form):
         min_value=1,
         label='Top-up Amount'
     )
+class PaymentForm(forms.Form):
+    pin = forms.CharField(
+        max_length=6,
+        widget=forms.PasswordInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'}),
+        label='Wallet PIN'
+    )
+

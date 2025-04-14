@@ -6,7 +6,27 @@ from django.views.decorators.http import require_POST
 from main.models import Customer
 from cart.models import ProductCart, Cart
 from .models import Order, OrderStatus
+from wallet.models import WalletAccount, Wallet
 import json, uuid
+
+NOT_PAID_STATUS_ID = '11111111111111111111111111111111'
+PAID_STATUS_ID = '22222222222222222222222222222222'
+PREPARED_STATUS_ID = '33333333333333333333333333333333'
+READY_STATUS_ID = '44444444444444444444444444444444'
+DELIVERED_STATUS_ID = '55555555555555555555555555555555'
+COMPLETED_STATUS_ID = '66666666666666666666666666666666'
+REVIEWED_STATUS_ID = '77777777777777777777777777777777'
+CANCELLED_STATUS_ID = '88888888888888888888888888888888'
+
+def update_wallet_ballance(wallet, amount):
+    wallet.saldo = amount
+    wallet.save()
+
+def update_product(cart):
+    product_carts = ProductCart.objects.filter(cart=cart)
+    for product_cart in product_carts:
+        product_cart.product.stock += product_cart.quantity
+        product_cart.product.save()
 
 @login_required
 def show_order(request):
@@ -116,7 +136,12 @@ def cancel_order(request, id):
     if order.status.status not in cancellable_statuses:
         messages.error(request, "This order cannot be cancelled at its current status.")
         return redirect('order:order_detail', id=id)
-    
+
+    if order.status.id == uuid.UUID(PAID_STATUS_ID):
+        update_product(order.cart)
+        wallet = Wallet.objects.get(walletAccount__user = request.user)
+        update_wallet_ballance(wallet, wallet.saldo+order.total)
+
     cancelled_status = OrderStatus.objects.get(id='88888888888888888888888888888888')
     order.status = cancelled_status
     order.save()

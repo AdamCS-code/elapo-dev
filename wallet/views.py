@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from .models import WalletAccount, Wallet, WalletSession, OrderPayment
-from .forms import WalletAccountForm, WalletForm, LoginWalletForm, TopUpForm, PaymentForm 
+from .forms import WalletAccountForm, WalletForm, LoginWalletForm, TopUpForm, PaymentForm
 from order.models import Order, OrderStatus
 from cart.models import ProductCart, Cart
 from product.models import Product
@@ -36,7 +36,6 @@ def update_order_status(order, to_status):
     order.save()
 
 def order_detail(id):
-    print(id)
     try:
         order = Order.objects.get(pk=id)
         product_carts = ProductCart.objects.filter(cart=order.cart)
@@ -90,7 +89,7 @@ def pay_order(request, id):
 
         if check_wallet_session(walletSessionId) != walletAccount:
             # login dulu, kembalikan ke halaman ini 
-            stack.append(('order:pay_order', id))
+            stack.append(('wallet:payment_order', id))
             redirect('wallet:login_wallet')
         
         if order.cart.customer != customer:
@@ -201,7 +200,10 @@ def login_wallet(request):
             wallet_account.login_attempts = 0
             wallet_account.save()
             # create session
-            wallet_session = WalletSession.objects.create(id=uuid.uuid4(),walletAccount=wallet_account)
+            wallet_session = WalletSession.objects.filter(walletAccount__user=request.user)
+            if len(wallet_session) > 0:
+                wallet_session[0].delete()
+            wallet_session = WalletSession.objects.create(walletAccount=wallet_account)
             wallet_session.save()
             request.session['walletSession'] = str(wallet_session.id)
             if len(stack) > 0:
@@ -224,6 +226,7 @@ def login_wallet(request):
 def wallet_dashboard(request):
     walletSession = check_wallet_session(request.session.get('walletSession'))
     if not walletSession:
+        request.session['walletSession'] = ''
         return redirect('wallet:login_wallet')
 
     wallet_account = get_object_or_404(WalletAccount, user=request.user)

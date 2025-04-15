@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'order',
     'payment',
     'delivery',
+    'administrator',
+    'worker',
     'core',
     'django_recaptcha',
 ]

@@ -61,6 +61,7 @@ def order_detail(id):
                 'paid',
             ]
         }
+        context['is_customer'] = True
         return context
     except:
         return None
@@ -71,6 +72,7 @@ def show_payment(request, id):
     context = order_detail(id)
     if not context:
         return JsonResponse({'message': 'fail because order not found'}, status=400)
+    context['is_customer'] = True
     return render(request, 'payment_order.html', context) 
 
 @csrf_exempt
@@ -123,7 +125,7 @@ def pay_order(request, id):
         else:
             form = PaymentForm()
             form = render_to_string('form_wallet.html', {'form': form}, request)
-        return render(request, 'payment_order.html', context={'form': form, 'order': order})
+        return render(request, 'payment_order.html', context={'form': form, 'order': order, 'is_customer': True})
 
 
 @csrf_exempt
@@ -148,7 +150,13 @@ def register_wallet(request):
     else:
         form = WalletAccountForm()
     form = render_to_string('form_wallet.html', {'form': form}, request=request) 
-    return render(request, 'show_wallet.html', {'form': form})
+    try:
+        request.user.customer
+        is_customer = True
+    except:
+        is_customer = False
+
+    return render(request, 'show_wallet.html', {'form': form, 'is_customer': is_customer})
 
 @csrf_exempt
 @login_required
@@ -172,7 +180,12 @@ def topup_wallet(request):
         form = TopUpForm()
 
     form = render_to_string('form_wallet.html', {'form': form}, request=request)
-    return render(request, 'show_wallet.html', {'form': form})
+    try:
+        request.user.customer
+        is_customer = True
+    except:
+        is_customer = False
+    return render(request, 'show_wallet.html', {'form': form, 'is_customer': is_customer})
 
 @login_required
 @csrf_exempt
@@ -217,9 +230,15 @@ def login_wallet(request):
     else:
         form = LoginWalletForm(wallet_account=wallet_account)
     form = render_to_string('form_wallet.html', {'form': form}, request=request)
+    try:
+        request.user.customer
+        is_customer = True
+    except:
+        is_customer = False
     return render(request, "show_wallet.html", {
         'form': form,
-        'attempts_left': MAX_ATTEMPTS - wallet_account.login_attempts
+        'attempts_left': MAX_ATTEMPTS - wallet_account.login_attempts,
+        'is_customer': is_customer
     })
 
 @login_required
@@ -231,15 +250,22 @@ def wallet_dashboard(request):
 
     wallet_account = get_object_or_404(WalletAccount, user=request.user)
     wallet = get_object_or_404(Wallet, walletAccount=wallet_account)
-
-    unpaid_orders = Order.objects.filter(cart__customer=request.user.customer, status__id = NOT_PAID_STATUS_ID).order_by('created_at')
-    paid_orders = OrderPayment.objects.filter(order__cart__customer=request.user.customer).order_by('created_at')
-    context = {
-        'payment_history': paid_orders,
-        'pending_orders': unpaid_orders,
-        'balance': wallet.saldo,
-        'wallet_account': wallet_account,
-    }
+    try:
+        unpaid_orders = Order.objects.filter(cart__customer=request.user.customer, status__id = NOT_PAID_STATUS_ID).order_by('created_at')
+        paid_orders = OrderPayment.objects.filter(order__cart__customer=request.user.customer).order_by('created_at')
+        context = {
+            'payment_history': paid_orders,
+            'pending_orders': unpaid_orders,
+            'balance': wallet.saldo,
+            'wallet_account': wallet_account,
+            'is_customer': True,
+        }
+    except:
+        context = {
+            'is_worker': True,
+            'wallet_account': wallet_account,
+            'balance': wallet.saldo,
+        }
     return render(request, 'show_wallet.html', context)
 
 def check_wallet_session(sessionId):

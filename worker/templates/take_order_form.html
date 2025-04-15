@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Take Order</title>
+</head>
+<body>
+    <h1>Order Action</h1>
+
+    <h3>Customer Information</h3>
+    <p><strong>Name:</strong> {{ customer.name }}</p>
+    <p><strong>Address:</strong> {{ customer.domicile }}</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <label>Take Order?</label>
+        <br>
+        <button type="submit" name="action" value="take">Take Order</button>
+        <button type="submit" name="action" value="decline">Decline Order</button>
+    </form>
+
+    <a href="/">Back to Dashboard</a>
+</body>
+</html>

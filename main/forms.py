@@ -180,7 +180,7 @@ class CustomerRegistrationForm(UserCreationForm):
                 email=self.cleaned_data['email'],
                 nomor_hp=self.cleaned_data['nomor_hp']
             )
-            customer.groups.set([Group.objects.get('Customer')])
+            customer.user.groups.set([Group.objects.get(name='Customer')])
         return user
 
 class LoginForm(AuthenticationForm):

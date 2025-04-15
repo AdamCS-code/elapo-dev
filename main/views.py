@@ -12,8 +12,36 @@ from django.template.loader import render_to_string
 
 @login_required(login_url='/login')
 def show_main_page(request): 
-    print(request.user.customer)
-    return render(request, 'home.html', context={'user': request.user})
+    context = {}
+    try:
+        customer = request.user.customer
+        context = {
+            'customer': request.user.customer,
+            'is_customer': True
+        }
+    except:
+        print('not customer')
+    try:
+        worker = request.user.worker
+        context = {
+            'worker': request.user.worker,
+            'is_worker': True
+        }
+    except:
+        print('not worker')
+
+    try:
+        admin = request.user.admin
+        context = {
+            'admin': request.user.admin,
+            'is_admin': True,
+        }
+    except:
+        print('not admin')
+
+    context['user'] = request.user
+    return render(request, 'home.html', context)
+
 
 def show_loggedin_page(request):
     return render(request, 'home.html', context={'user': request.user})

@@ -30,7 +30,7 @@ def update_product(cart):
 
 @login_required
 def show_order(request):
-    return render(request, 'show_order.html', context={})
+    return render(request, 'show_order.html', context={'is_customer': True})
 
 @login_required
 def customer_view_order(request):
@@ -61,7 +61,8 @@ def customer_view_order(request):
         'statuses': status,
             'status_counts': status_count,
             'active_status_id': active_status_id,
-            'active_orders': active_orders
+            'active_orders': active_orders,
+            'is_customer': True 
     })
 
 @login_required
@@ -85,6 +86,7 @@ def customer_order_list(request):
         'completed_orders': completed_orders,
         'reviewed_orders': reviewed_orders,
         'cancelled_orders': cancelled_orders,
+        'is_customer': True
     }
     return render(request, 'show_order.html', context)
 
@@ -110,6 +112,7 @@ def order_detail(request, id):
         } for product_cart in product_carts
     ]
     context = {
+        'is_customer': True,
         'order': order,
         'cart_products': product_carts_json,
         'can_cancel': str(order.status.status) in [

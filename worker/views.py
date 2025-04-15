@@ -100,9 +100,6 @@ def complete_order_status(request):
     
     else:
         return HttpResponseForbidden("Invalid request method")
-    
-
-
 def order_complete_page(request):
     return render(request, "order_complete.html")
 

@@ -20,6 +20,19 @@ COMPLETED_STATUS_ID = '66666666666666666666666666666666'
 REVIEWED_STATUS_ID = '77777777777777777777777777777777'
 CANCELLED_STATUS_ID = '88888888888888888888888888888888'
 
+def get_user_role(user):
+    user_group = user.groups.values_list('name', flat='True')
+    if len(user_group) == 1:
+        if user_group[0] == 'Admin':
+            return 'Admin'
+        elif user_group[0] == 'Customer':
+            return 'Customer'
+        else:
+            return 'Worker'
+    else:
+        return 'hey you mfs'
+
+
 def update_wallet_balance(wallet, amount):
     wallet.saldo = amount
     wallet.save()
@@ -61,71 +74,74 @@ def order_detail(id):
                 'paid',
             ]
         }
-        context['is_customer'] = True
         return context
     except:
         return None
 
 @login_required
 def show_payment(request, id):
+    if (get_user_role(request.user) != 'Customer'):
+        return JsonResponse({'message' : 'only customer could access this resource!'}, status=400)
+
     customer = request.user.customer
     context = order_detail(id)
     if not context:
         return JsonResponse({'message': 'fail because order not found'}, status=400)
-    context['is_customer'] = True
     return render(request, 'payment_order.html', context) 
 
 @csrf_exempt
 @login_required
 def pay_order(request, id):
-        customer = request.user.customer
-        order = Order.objects.get(pk=id)
-        walletAccount = WalletAccount.objects.get(user=request.user)
-        wallet = Wallet.objects.get(walletAccount=walletAccount)
+    if (get_user_role(request.user) != 'Customer'):
+        return JsonResponse({'message' : 'only customer could access this resource!'}, status=400)
+    customer = request.user.customer
+    order = Order.objects.get(pk=id)
+    walletAccount = WalletAccount.objects.get(user=request.user)
+    wallet = Wallet.objects.get(walletAccount=walletAccount)
 
-        # check apakah sudah terautentikasi
-        try:
-            walletSessionId = request.session['walletSession']
-        except KeyError:
-            walletSessionId = ''
+    # check apakah sudah terautentikasi
+    try:
+        walletSessionId = request.session['walletSession']
+    except KeyError:
+        walletSessionId = ''
 
-        if check_wallet_session(walletSessionId) != walletAccount:
-            # login dulu, kembalikan ke halaman ini 
-            stack.append(('wallet:payment_order', id))
-            redirect('wallet:login_wallet')
-        
-        if order.cart.customer != customer:
-            return JsonResponse({'message': 'fail because you are not the one who order it, sorry'}, status=400)
-        
+    if check_wallet_session(walletSessionId) != walletAccount:
+        # login dulu, kembalikan ke halaman ini 
+        stack.append(('wallet:payment_order', id))
+        redirect('wallet:login_wallet')
+    
+    if order.cart.customer != customer:
+        return JsonResponse({'message': 'fail because you are not the one who order it, sorry'}, status=400)
+    
 
-        orderPayment, _ = OrderPayment.objects.get_or_create(order=order, walletAccount=walletAccount)
-        if request.method == 'POST':
-            form = PaymentForm(request.POST)
-            if form.is_valid():
+    orderPayment, _ = OrderPayment.objects.get_or_create(order=order, walletAccount=walletAccount)
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
 
-                pin = form.cleaned_data['pin']
+            pin = form.cleaned_data['pin']
 
-                walletAccount.reset_attempts_if_needed()
+            walletAccount.reset_attempts_if_needed()
 
-                if walletAccount.login_attempts > 3:
-                    return JsonResponse({'message': 'you don\'t any attempt left, wait 10 minutes'})
+            if walletAccount.login_attempts > 3:
+                return JsonResponse({'message': 'you don\'t any attempt left, wait 10 minutes'})
 
-                if walletAccount.check_pin(pin):
-                    # check apakah uang pengguna cukup
-                    if order.total > wallet.saldo:
-                        return JsonResponse({'message': 'fail because you don\'t have enough balance'})
-                    else:
-                        update_wallet_balance(wallet, wallet.saldo - order.total)
-                        update_product(order.cart)
-                        update_order_status(order, PAID_STATUS_ID)
-                        return redirect('order:order_detail', id=order.id)
+            if walletAccount.check_pin(pin):
+                # check apakah uang pengguna cukup
+                if order.total > wallet.saldo:
+                    return JsonResponse({'message': 'fail because you don\'t have enough balance'})
+                else:
+                    update_wallet_balance(wallet, wallet.saldo - order.total)
+                    update_product(order.cart)
+                    update_order_status(order, PAID_STATUS_ID)
+                    return redirect('order:order_detail', id=order.id)
 
-            else:
-                return JsonResponse({'message': 'you entered wrong password'})
         else:
-            form = PaymentForm()
-            form = render_to_string('form_wallet.html', {'form': form}, request)
-        return render(request, 'payment_order.html', context={'form': form, 'order': order, 'is_customer': True})
+            return JsonResponse({'message': 'you entered wrong password'})
+    else:
+        form = PaymentForm()
+        form = render_to_string('form_wallet.html', {'form': form}, request)
+    return render(request, 'payment_order.html', context={'form': form, 'order': order, 'is_customer': True})
 
 
 @csrf_exempt
@@ -229,17 +245,25 @@ def login_wallet(request):
             wallet_account.save()
     else:
         form = LoginWalletForm(wallet_account=wallet_account)
-    form = render_to_string('form_wallet.html', {'form': form}, request=request)
-    try:
-        request.user.customer
-        is_customer = True
-    except:
-        is_customer = False
-    return render(request, "show_wallet.html", {
+
+    context = {'form': form}
+
+
+    form = render_to_string('form_wallet.html', context, request=request)
+    context = {
         'form': form,
         'attempts_left': MAX_ATTEMPTS - wallet_account.login_attempts,
-        'is_customer': is_customer
-    })
+
+    }
+    user_role = get_user_role(request.user)
+    if user_role == 'Admin':
+        context['is_admin'] = True
+    elif user_role == 'Customer':
+        context['is_customer'] = True
+    elif user_role == 'Worker':
+        context['is_worker'] = True
+
+    return render(request, "show_wallet.html", context)
 
 @login_required
 def wallet_dashboard(request):
@@ -250,7 +274,7 @@ def wallet_dashboard(request):
 
     wallet_account = get_object_or_404(WalletAccount, user=request.user)
     wallet = get_object_or_404(Wallet, walletAccount=wallet_account)
-    try:
+    if get_user_role(request.user) == 'Customer':
         unpaid_orders = Order.objects.filter(cart__customer=request.user.customer, status__id = NOT_PAID_STATUS_ID).order_by('created_at')
         paid_orders = OrderPayment.objects.filter(order__cart__customer=request.user.customer).order_by('created_at')
         context = {
@@ -260,11 +284,17 @@ def wallet_dashboard(request):
             'wallet_account': wallet_account,
             'is_customer': True,
         }
-    except:
+    elif get_user_role(request.user) == 'Worker':
         context = {
-            'is_worker': True,
-            'wallet_account': wallet_account,
             'balance': wallet.saldo,
+            'wallet_account': wallet_account,
+            'is_worker': True,
+        }
+    elif get_user_role(request.user) == 'Admin':
+        context = {
+            'balance': wallet.saldo,
+            'wallet_account': wallet_account,
+            'is_admin': True,
         }
     return render(request, 'show_wallet.html', context)
 

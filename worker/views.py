@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from wallet.models import OrderPayment
+from wallet.models import OrderPayment, Wallet, WalletAccount
 from order.models import Order, OrderStatus
 from django.http import HttpResponseForbidden, HttpResponse
 from django.contrib.auth.decorators import login_required
@@ -15,6 +15,28 @@ def worker_required(view_func):
             return HttpResponseForbidden("Not authorized, you must be a worker!")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
+
+@login_required
+@worker_required
+def complete_order(request, id):
+    if request.method == 'POST':
+        order = Order.objects.get(pk=id)
+
+        if order.status.id != '55555555555555555555555555555555':
+            return JsonResponse({'message': 'cannot complete completed order'})
+        orderPayment = OrderPayment.objects.get(order=order)
+
+        if orderPayment.worker != request.user.worker:
+            return JsonResponse({'message': 'you can not complete other people work'})
+
+        COMPLETED_STATUS_ID = '66666666666666666666666666666666'
+        order.status = OrderStatus.objects.get(pk=COMPLETED_STATUS_ID)
+        order.save()
+
+        wallet = Wallet.objects.get(walletAccount__user = request.user)
+        wallet.saldo += orderPayment.delivery_fee
+        wallet.save()
+    return redirect('order:order_detail', id=id)
 
 @login_required
 @worker_required
@@ -39,6 +61,8 @@ def take_order_status(request, pk):
         if action == "take":
             order = OrderPayment.objects.get(order=order)
             order.set_worker(worker)
+            order.order.status = OrderStatus.objects.filter(status='delivered').first()
+            order.order.save()
             return redirect("order:order_detail", id=order_id)
         
         elif action == "decline":

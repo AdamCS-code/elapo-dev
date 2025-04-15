@@ -6,7 +6,7 @@ from django.views.decorators.http import require_POST
 from main.models import Customer
 from cart.models import ProductCart, Cart
 from .models import Order, OrderStatus
-from wallet.models import WalletAccount, Wallet
+from wallet.models import WalletAccount, Wallet, OrderPayment
 import json, uuid
 
 NOT_PAID_STATUS_ID = '11111111111111111111111111111111'
@@ -17,6 +17,18 @@ DELIVERED_STATUS_ID = '55555555555555555555555555555555'
 COMPLETED_STATUS_ID = '66666666666666666666666666666666'
 REVIEWED_STATUS_ID = '77777777777777777777777777777777'
 CANCELLED_STATUS_ID = '88888888888888888888888888888888'
+
+def get_user_role(user):
+    user_group = user.groups.values_list('name', flat='True')
+    if len(user_group) == 1:
+        if user_group[0] == 'Admin':
+            return 'Admin'
+        elif user_group[0] == 'Customer':
+            return 'Customer'
+        else:
+            return 'Worker'
+    else:
+        return 'hey you mfs'
 
 def update_wallet_ballance(wallet, amount):
     wallet.saldo = amount
@@ -30,43 +42,35 @@ def update_product(cart):
 
 @login_required
 def show_order(request):
-    return render(request, 'show_order.html', context={'is_customer': True})
+    context = {'user': request.user}
+    if get_user_role(request.user) == 'Customer':
+        return redirect('order:show_order')
+    elif get_user_role(request.user) == 'Worker':
+        return redirect('order:show_order_worker')
+    elif get_user_role(request.user) == 'Admin':
+        context['is_admin'] = True
+    return render(request, 'show_order.html', context)
 
 @login_required
-def customer_view_order(request):
-    customer = request.user.customer
-
-    if not customer:
-        return JsonResponse({'message': 'customer not found? are you customer?'})
-
-    status_count = dict() 
-
-    order = Order.objects.filter(cart__customer=customer)
-    orderStatus = OrderStatus.objects.all().order_by('id') 
-
-    for status in orderStatus:
-        status_count[status.status] = order.filter(status=status).count()
-
-    active_status_id = request.GET.get('status', status.first().id if status.exists() else None)
-
-    if active_status_id:
-        active_orders = Order.objects.filter(
-                status_id=active_status_id,
-                cart__customer=customer
-            ).select_related('cart', 'status').order_by('-created_at')
+def show_order_worker(request):
+    if get_user_role(request.user) == 'Worker':
+        available_orders = OrderPayment.objects.filter(worker__isnull=True, order__status__status='ready')
+        delivered_orders = OrderPayment.objects.filter(worker=request.user.worker, order__status__status='delivered') 
+        completed_orders = OrderPayment.objects.filter(worker=request.user.worker, order__status__status='completed')
+        context = {
+            'available_orders': available_orders,
+            'delivered_orders': delivered_orders,
+            'completed_orders': completed_orders,
+            'is_worker': True,
+        }
+        return render(request, 'show_order.html', context)
     else:
-        active_orders = []
-    
-    return render(request, 'show_order.html', context = {
-        'statuses': status,
-            'status_counts': status_count,
-            'active_status_id': active_status_id,
-            'active_orders': active_orders,
-            'is_customer': True 
-    })
+        return JsonResponse({'message' : 'only worker could access this resource!'}, status=400)
 
 @login_required
-def customer_order_list(request):
+def show_order_customer(request):
+    if get_user_role(request.user) != 'Customer':
+        return JsonResponse({'message' : 'only customer could access this resource!'}, status=400)
     orders = Order.objects.filter(cart__customer=request.user.customer).select_related('status')
     not_paid_orders = orders.filter(status__status='not paid')
     paid_orders = orders.filter(status__status='paid')
@@ -76,7 +80,6 @@ def customer_order_list(request):
     completed_orders = orders.filter(status__status='completed')
     reviewed_orders = orders.filter(status__status='reviewed')
     cancelled_orders = orders.filter(status__status='cancelled')
-    print(orders)
     context = {
         'not_paid_orders': not_paid_orders,
         'paid_orders': paid_orders,
@@ -92,10 +95,7 @@ def customer_order_list(request):
 
 @login_required
 def order_detail(request, id):
-    order = get_object_or_404(Order, id=id)
-    if order.cart.customer != request.user.customer:
-        messages.error(request, "You don't have permission to view this order.")
-        return redirect('order:show_order')
+    order = Order.objects.get(pk=id)
     product_carts = ProductCart.objects.filter(cart=order.cart)
 
     product_carts_json = [
@@ -112,14 +112,20 @@ def order_detail(request, id):
         } for product_cart in product_carts
     ]
     context = {
-        'is_customer': True,
         'order': order,
         'cart_products': product_carts_json,
         'can_cancel': str(order.status.status) in [
             'not paid',
             'paid',
-        ]
+        ] and get_user_role(request.user) == 'Customer'
     }
+    if get_user_role(request.user) == 'Worker':
+        context['is_worker'] = True
+    elif get_user_role(request.user) == 'Customer':
+        context['is_customer'] = True
+    elif get_user_role(request.user) == 'Admin':
+
+        context['is_admin'] = True
     return render(request, 'show_order_details.html', context)
 
 @login_required

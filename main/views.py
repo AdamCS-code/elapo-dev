@@ -12,7 +12,7 @@ from django.template.loader import render_to_string
 
 @login_required(login_url='/login')
 def show_main_page(request): 
-    context = {}
+    context = {'user': request.user}
     try:
         customer = request.user.customer
         context = {
@@ -39,7 +39,6 @@ def show_main_page(request):
     except:
         print('not admin')
 
-    context['user'] = request.user
     return render(request, 'home.html', context)
 
 

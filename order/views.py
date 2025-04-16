@@ -38,9 +38,23 @@ def show_order(request):
     elif get_user_role(request.user) == 'Worker':
         return redirect('order:show_order_worker')
     elif get_user_role(request.user) == 'Admin':
-        context['is_admin'] = True
+        return redirect('order:show_order_admin')
     return render(request, 'show_order.html', context)
 
+@login_required
+def show_order_admin(request):
+    if get_user_role(request.user) == 'Admin':
+        available_orders = OrderPayment.objects.filter(order__status__status='paid')
+        prepared_orders = OrderPayment.objects.filter(order__status__status='prepared')
+        reviewed_orders = OrderPayment.objects.filter(order__status__status='reviewed')
+        context = {
+            'paid_orders': available_orders,
+            'prepared_orders': prepared_orders,
+            'reviewed_orders': reviewed_orders,
+            'is_admin': True,
+        }
+        return render(request, 'show_order_admin.html', context)
+        
 @login_required
 def show_order_worker(request):
     if get_user_role(request.user) == 'Worker':
@@ -114,7 +128,6 @@ def order_detail(request, id):
     elif get_user_role(request.user) == 'Customer':
         context['is_customer'] = True
     elif get_user_role(request.user) == 'Admin':
-
         context['is_admin'] = True
     return render(request, 'show_order_details.html', context)
 

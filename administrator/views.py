@@ -1,9 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth.models import User
 from .models import AdminActivityLog
+from .forms import ProductForm 
 from main.models import Admin
-
+from product.views import get_product 
+from product.models import Product
 @login_required
 def dashboard(request):
     users = User.objects.all().order_by('-date_joined')
@@ -23,12 +26,13 @@ def dashboard(request):
     customer_user_ids = [customer.user.id for customer in customers]
     worker_user_ids = [worker.user.id for worker in workers]
     
-    return render(request, 'admin-panel/dashboard.html', {
+    return render(request, 'dashboard.html', {
         'total_users': total_users,
         'users': users,
         'admin_user_ids': admin_user_ids,
         'customer_user_ids': customer_user_ids,
         'worker_user_ids': worker_user_ids,
+        'is_admin': True,
     })
 
 
@@ -51,9 +55,67 @@ def delete_user(request, user_id):
     )
 
     user_to_delete.delete()
-    return redirect('dashboard')
+    return redirect('administrator:dashboard')
 
 
 def no_permission(request):
-    return render(request, 'admin-panel/no_permission.html', status=403)
+    return render(request, 'no_permission.html', status=403)
 
+@login_required
+def create_product(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('administrator:create_product')  # Ganti dengan nama URL tujuan
+    else:
+        form = ProductForm()
+    return render(request, 'create_product.html', {'form': form})
+
+@login_required
+def product_dashboard(request):
+    # Ambil semua produk yang ada di database
+    products = Product.objects.all().order_by('-id')  # Mengurutkan berdasarkan ID atau preferensi lainnya
+    
+    return render(request, 'product_dashboard.html', {'products': products, 'is_admin': True})
+
+@login_required
+def update_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+
+    if request.method == 'POST':
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('administrator:product_dashboard')
+    else:
+        form = ProductForm(instance=product)
+
+    return render(request, 'update_product.html', {'form': form})
+
+@login_required
+@require_POST
+def delete_product(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    product.delete()
+    return redirect('administrator:product_dashboard')
+
+
+@login_required
+def all_product(request):
+    products = Product.objects.all() 
+    product_json = [
+        {
+            'id' : product.id,
+            'product_name': product.product_name,
+            'stock': product.stock,
+            'price': float(product.price),
+            'description': product.description,
+        } for product in products
+    ]
+     
+    return JsonResponse(data={'products' : product_json})
+
+@login_required
+def process_order(request, order_id):
+    return JsonResponse(status=200)

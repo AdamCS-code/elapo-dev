@@ -8,6 +8,8 @@
 {% include 'homepage_user.html' %}
 {% elif is_worker %}
 {% include 'homepage_worker.html' %}
+{% elif is_admin%}
+{% include  'homepage_admin.html' %} 
 {% endif %}
 {% endblock content %}
 

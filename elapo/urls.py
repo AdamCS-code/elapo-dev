@@ -30,5 +30,6 @@ urlpatterns = [
     path('delivery', include('delivery.urls', namespace='delivery')),
     path('worker/', include('worker.urls', namespace='worker')),
     path('review/', include('review.urls', namespace='review')),
+    path('administrator/', include('administrator.urls', namespace='administrator')),
 
 ]

@@ -5,8 +5,10 @@ from django.contrib.auth.models import User
 from .models import AdminActivityLog
 from .forms import ProductForm 
 from main.models import Admin
+from order.models import Order, OrderStatus
 from product.views import get_product 
 from product.models import Product
+from django.http import JsonResponse
 @login_required
 def dashboard(request):
     users = User.objects.all().order_by('-date_joined')
@@ -118,4 +120,7 @@ def all_product(request):
 
 @login_required
 def process_order(request, order_id):
-    return JsonResponse(status=200)
+    order = Order.objects.get(pk=order_id)
+    order.status = OrderStatus.objects.filter(status='ready').first()
+    order.save()
+    return redirect("order:order_detail", id=order_id)

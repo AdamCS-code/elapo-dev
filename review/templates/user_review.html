@@ -1,0 +1,17 @@
+{% extends 'main.html' %}
+{% block content %}
+<h2>My Review</h2>
+{% for review in reviews%}
+    <p>{{review.review_id}}</p>
+    <p>rating : {{review.rating}} </p> 
+    <p>description : {{review.description}}</p>
+    <form method="GET" action="{% url 'review:update_review' review.review_id %}">
+        <button type="submit">Edit</button>
+    </form>
+    <form method="POST" action="{% url 'review:delete_review' review.review_id %}">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+    </form>
+    <hr>
+{%endfor%}
+{% endblock content %}

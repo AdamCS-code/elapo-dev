@@ -29,6 +29,6 @@ urlpatterns = [
     path('payment', include('payment.urls', namespace='payment')),
     path('delivery', include('delivery.urls', namespace='delivery')),
     path('worker/', include('worker.urls', namespace='worker')),
-    path('review/', include('review.urls'), namespace='review')
+    path('review/', include('review.urls', namespace='review')),
 
 ]

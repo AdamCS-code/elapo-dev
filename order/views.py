@@ -8,6 +8,8 @@ from cart.models import ProductCart, Cart
 from .models import Order, OrderStatus
 from wallet.models import WalletAccount, Wallet, OrderPayment
 import json, uuid
+from core.views import get_user_role
+from django.http import JsonResponse
 
 NOT_PAID_STATUS_ID = '11111111111111111111111111111111'
 PAID_STATUS_ID = '22222222222222222222222222222222'
@@ -17,18 +19,6 @@ DELIVERED_STATUS_ID = '55555555555555555555555555555555'
 COMPLETED_STATUS_ID = '66666666666666666666666666666666'
 REVIEWED_STATUS_ID = '77777777777777777777777777777777'
 CANCELLED_STATUS_ID = '88888888888888888888888888888888'
-
-def get_user_role(user):
-    user_group = user.groups.values_list('name', flat='True')
-    if len(user_group) == 1:
-        if user_group[0] == 'Admin':
-            return 'Admin'
-        elif user_group[0] == 'Customer':
-            return 'Customer'
-        else:
-            return 'Worker'
-    else:
-        return 'hey you mfs'
 
 def update_wallet_ballance(wallet, amount):
     wallet.saldo = amount

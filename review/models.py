@@ -1,6 +1,6 @@
 from django.db import models
 import uuid
-from testimoni.models import Order
+from order.models import Order
 from main.models import Customer
 
 class FraudReport(models.Model):

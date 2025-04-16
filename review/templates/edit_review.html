@@ -1,0 +1,47 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          'cream': '#fff9ee',
+          'slate': '#585e6c',
+          'taupe': '#beb9ae',
+          'gray': '#e3e3e3'
+        }
+      }
+    }
+  }
+</script>
+<div class="bg-cream text-slate min-h-screen flex items-center justify-center p-4">
+<form method="post">
+  {% csrf_token %}
+  <div class="space-y-4">
+    {% for field in form %}
+    <div class="space-y-2">
+      <label class="block text-lg text-slate">
+        {{ field.label }}
+      </label>
+      <div class="mt-1">
+        {{ field }}
+      </div>
+      {% if field.errors %}
+      <p class="mt-1 text-sm text-red-600">{{ field.errors|join:", " }}</p>
+      {% endif %}
+    </div>
+    {% endfor %}
+
+    <div class="pt-4">
+      <button type="submit" class="w-full bg-slate hover:bg-slate/90 text-white font-medium py-3 px-4 mb-4 rounded-lg transition duration-200">
+        Submit
+      </button>
+      <a href="{% url 'review:my_review' %}"class="w-full bg-slate hover:bg-slate/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200">
+        Done
+      </a>
+    </div>
+  </div>
+</form>   
+</div>
+{% endblock content %}

@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from wallet.models import OrderPayment, Wallet, WalletAccount
 from order.models import Order, OrderStatus
-from django.http import HttpResponseForbidden, HttpResponse
+from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from main.models import Worker
@@ -22,7 +22,7 @@ def complete_order(request, id):
     if request.method == 'POST':
         order = Order.objects.get(pk=id)
 
-        if order.status.id != '55555555555555555555555555555555':
+        if order.status.status != 'delivered':
             return JsonResponse({'message': 'cannot complete completed order'})
         orderPayment = OrderPayment.objects.get(order=order)
 

@@ -1,0 +1,27 @@
+<!-- Main Content -->
+<div>
+  <h1>Welcome, Worker!</h1>
+  <p>This is your dashboard where you can manage tasks and check updates.</p>
+</div>
+
+<!-- Candidate Orders -->
+<div>
+  <h2>Available Orders</h2>
+  {% if orders %}
+  {% for order in orders %}
+  <div style="border: 1px solid #ccc; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+    <p><strong>Customer:</strong> {{ order.order.cart.customer.user.username }}</p>
+    <p><strong>Delivery Fee:</strong> {{ order.delivery_fee }}</p>
+
+    <form method="post" action="{% url 'worker:take_order_status' order.order_id %}">
+      {% csrf_token %}
+      <button type="submit" name="action" value="take">Take</button>
+      <button type="submit" name="action" value="decline">Decline</button>
+    </form>
+  </div>
+  {% endfor %}
+  {% else %}
+  <p>No orders available at the moment.</p>
+  {% endif %}
+</div>
+

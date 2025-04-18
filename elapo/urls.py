@@ -25,7 +25,11 @@ urlpatterns = [
     path('product/', include('product.urls', namespace='product')),
     path('wallet/', include('wallet.urls', namespace='wallet')),
     path('cart/', include('cart.urls', namespace='cart')),
-    path('order', include('order.urls', namespace='order')),
+    path('order/', include('order.urls', namespace='order')),
     path('payment', include('payment.urls', namespace='payment')),
-    path('delivery', include('delivery.urls', namespace='delivery'))
+    path('delivery', include('delivery.urls', namespace='delivery')),
+    path('worker/', include('worker.urls', namespace='worker')),
+    path('review/', include('review.urls', namespace='review')),
+    path('administrator/', include('administrator.urls', namespace='administrator')),
+
 ]

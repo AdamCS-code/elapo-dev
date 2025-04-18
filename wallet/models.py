@@ -24,6 +24,7 @@ class WalletAccount(models.Model):
             self.login_attempts = 0
             self.save()
 
+
 class Wallet(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     walletAccount = models.OneToOneField(WalletAccount, on_delete=models.CASCADE)
@@ -51,5 +52,9 @@ class OrderPayment(models.Model):
     worker = models.ForeignKey(Worker, on_delete=models.CASCADE, null=True)
     order = models.OneToOneField(Order, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now=True)
+    delivery_fee = models.DecimalField(max_digits=12, decimal_places=0, default=10000)
+    def set_worker(self, worker):
+        self.worker = worker
+        self.save()
 
 

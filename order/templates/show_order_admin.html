@@ -1,0 +1,72 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+  {% if paid_orders %}
+  <div class="mb-8 rounded-lg overflow-hidden shadow-lg border border-gray-200">
+    <div class="bg-blue-300 px-4 py-3">
+      <h3 class="text-xl font-semibold text-gray-800">Paid Orders</h3>
+    </div>
+    <div class="bg-white">
+      <div class="divide-y divide-gray-200">
+        {% for order in paid_orders %}
+        <a href="{% url 'order:order_detail' order.order.id %}" class="block hover:bg-gray-50 transition duration-150">
+          <div class="px-4 py-4">
+            <div class="flex justify-between items-center">
+              <h5 class="font-medium text-gray-800">Order #{{ order.id|truncatechars:8 }}</h5>
+              <span class="text-sm text-gray-500">{{ order.created_at }}</span>
+            </div>
+            <p class="mt-1 text-gray-600">Total: Rp {{ order.order.total }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% if prepared_orders %}
+  <div class="mb-8 rounded-lg overflow-hidden shadow-lg border border-gray-200">
+    <div class="bg-blue-600 px-4 py-3">
+      <h3 class="text-xl font-semibold text-white">Prepared Orders</h3>
+    </div>
+    <div class="bg-white">
+      <div class="divide-y divide-gray-200">
+        {% for order in prepared_orders %}
+        <a href="{% url 'order:order_detail' order.order.id %}" class="block hover:bg-gray-50 transition duration-150">
+          <div class="px-4 py-4">
+            <div class="flex justify-between items-center">
+              <h5 class="font-medium text-gray-800">Order #{{ order.order.id|truncatechars:8 }}</h5>
+              <span class="text-sm text-gray-500">{{ order.created_at }}</span>
+            </div>
+            <p class="mt-1 text-gray-600">Total: Rp {{ order.order.total }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+  {% if reviewed_orders %}
+  <div class="mb-8 rounded-lg overflow-hidden shadow-lg border border-gray-200">
+    <div class="bg-gray-600 px-4 py-3">
+      <h3 class="text-xl font-semibold text-white">Reviewed Orders</h3>
+    </div>
+    <div class="bg-white">
+      <div class="divide-y divide-gray-200">
+        {% for order in reviewed_orders %}
+        <a href="{% url 'order:order_detail' order.order.id %}" class="block hover:bg-gray-50 transition duration-150">
+          <div class="px-4 py-4">
+            <div class="flex justify-between items-center">
+              <h5 class="font-medium text-gray-800">Order #{{ order.id|truncatechars:8 }}</h5>
+              <span class="text-sm text-gray-500">{{ order.created_at }}</span>
+            </div>
+            <p class="mt-1 text-gray-600">Total: Rp {{ order.order.total }}</p>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

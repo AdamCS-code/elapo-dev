@@ -27,19 +27,19 @@
         <p class="text-taupe text-center mb-6">Please select your account type</p>
         
         <div class="grid grid-cols-2 gap-4">
-            <button id="customer-btn" class="w-full bg-slate hover:bg-slate/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex flex-col items-center justify-center">
+          <a href="{% url 'main:customer_register' %} "id="customer-btn" class="w-full bg-slate hover:bg-slate/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex flex-col items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
                 Customer
-            </button> 
+            </a> 
 
-            <button id="worker-btn" class="w-full bg-slate hover:bg-slate/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex flex-col items-center justify-center">
+            <a href="{%url 'main:worker_register'%}" id="worker-btn" class="w-full bg-slate hover:bg-slate/90 text-white font-medium py-3 px-4 rounded-lg transition duration-200 flex flex-col items-center justify-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 Worker
-            </button>
+            </a>
         </div>
         <div class="mt-6 text-center text-sm">
           <p class="text-taupe">
@@ -67,75 +67,6 @@
         </div>
     </div>
   </div>
-  <script>
-    const userTypeSelection = document.getElementById('user-type-selection');
-    const registrationFormContainer = document.getElementById('registration-form-container');
-    const customerBtn = document.getElementById('customer-btn');
-    const workerBtn = document.getElementById('worker-btn');
-    const backBtn = document.getElementById('back-btn');
-    const formTitle = document.getElementById('form-title');
-    const djangoFormContainer = document.getElementById('django-form-container');
-
-    customerBtn.addEventListener('click', () => {
-      userTypeSelection.classList.add('hidden');
-      registrationFormContainer.classList.remove('hidden');
-      formTitle.textContent = 'Register as Customer';
-      fetchForm('customer');
-    });
-
-    workerBtn.addEventListener('click', () => {
-      userTypeSelection.classList.add('hidden');
-      registrationFormContainer.classList.remove('hidden');
-      formTitle.textContent = 'Register as Worker';
-      fetchForm('worker');
-    });
-
-    backBtn.addEventListener('click', () => {
-      registrationFormContainer.classList.add('hidden');
-      userTypeSelection.classList.remove('hidden');
-    });
-
-    function fetchForm(userType) {
-      djangoFormContainer.innerHTML = '<div class="flex justify-center py-6"><svg class="animate-spin h-8 w-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
-      if (userType == 'worker') {
-        fetch("{% url 'main:worker_register' %}", {
-          method:'get',
-          headers: {
-            Accept: "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-          },
-        })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json(); 
-          })
-          .then(data => {
-            djangoFormContainer.innerHTML = data.form;
-            document.getElementById('form-register').action = "{% url 'main:worker_register' %}" 
-          });
-      } else if (userType == 'customer') {
-        console.log("{% url 'main:customer_register' %}")
-        fetch("{% url 'main:customer_register' %}", {
-          method:'get',
-          headers: {
-            Accept: "application/json",
-            "X-Requested-With": "XMLHttpRequest",
-          },
-        })
-          .then(response => {
-            if (!response.ok) {
-              throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json(); 
-          })
-          .then(data => {
-            djangoFormContainer.innerHTML = data.form;
-            document.getElementById('form-register').action = "{% url 'main:customer_register' %}" 
-          });
-      }
-    }
-    </script>
 </div>
+
 {% endblock content %}

@@ -1,0 +1,7 @@
+<h2>Edit Report</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Simpan Perubahan</button>
+</form>
+<a href="{% url 'main:home' %}">Batal</a>

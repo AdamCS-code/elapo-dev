@@ -12,8 +12,35 @@ from django.template.loader import render_to_string
 
 @login_required(login_url='/login')
 def show_main_page(request): 
-    print(request.user.customer)
-    return render(request, 'home.html', context={'user': request.user})
+    context = {'user': request.user}
+    try:
+        customer = request.user.customer
+        context = {
+            'customer': request.user.customer,
+            'is_customer': True
+        }
+    except:
+        print('not customer')
+    try:
+        worker = request.user.worker
+        context = {
+            'worker': request.user.worker,
+            'is_worker': True
+        }
+    except:
+        print('not worker')
+
+    try:
+        admin = request.user.admin
+        context = {
+            'admin': request.user.admin,
+            'is_admin': True,
+        }
+    except:
+        print('not admin')
+
+    return render(request, 'home.html', context)
+
 
 def show_loggedin_page(request):
     return render(request, 'home.html', context={'user': request.user})
@@ -53,8 +80,7 @@ def customer_register(request):
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:
         form = CustomerRegistrationForm()
-    form_html = render_to_string('register_form.html', {'form': form}, request=request) 
-    return JsonResponse({'form': form_html})
+    return render(request, 'register_customer.html',{'form': form})
 
 @csrf_exempt
 def worker_register(request):
@@ -68,8 +94,7 @@ def worker_register(request):
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:
         form = WorkerRegistrationForm() 
-    form_html = render_to_string('register_form.html', {'form': form}, request=request) 
-    return JsonResponse({'form': form_html})
+    return render(request, 'register_customer.html',{'form': form})
 
 def logout_user(request):
     logout(request)

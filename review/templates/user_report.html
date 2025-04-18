@@ -1,0 +1,16 @@
+{% extends 'main.html' %}
+{% block content %}
+<h2>My Report</h2>
+{% for report in reports%}
+    <h3>{{report.order.order_id}}</h3>
+    <p>description : {{report.description}}</p>
+    <form method="GET" action="{% url 'review:update_report' report.report_id %}">
+        <button type="submit">Edit</button>
+    </form>
+    <form method="POST" action="{% url 'review:delete_report' report.report_id %}">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+    </form>
+    <hr>
+{%endfor%}
+{% endblock content %}

@@ -37,6 +37,7 @@
     </div>
     
     <!-- Order Payment History Section -->
+    {% if is_customer %}
     <div class="bg-cream p-5 rounded-lg shadow-md mb-6">
       <h2 class="text-xl font-semibold text-slate mb-3">Payment History</h2>
       {% if payment_history %}
@@ -64,7 +65,6 @@
       <p class="text-slate/70 py-3">No payment history available.</p>
       {% endif %}
     </div>
-    
     <!-- Pending Orders Section -->
     <div class="bg-cream p-5 rounded-lg shadow-md">
       <h2 class="text-xl font-semibold text-slate mb-3">Pending Orders</h2>
@@ -86,6 +86,8 @@
       <p class="text-slate/70 py-3">No pending orders available.</p>
       {% endif %}
     </div>
+    {% endif %}
+
   </div>
   {% endif %}
 </div>

@@ -33,7 +33,12 @@ class AdminRegistrationForm(UserCreationForm):
         widget=forms.TextInput(attrs={'class': 'form-input'})
     )
 
+<<<<<<< HEAD
     recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
+=======
+    captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
+
+>>>>>>> master
    
     def check_email(self):
         email = self.cleaned_data['email']
@@ -92,6 +97,7 @@ class WorkerRegistrationForm(UserCreationForm):
         label='domisili',
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
     )
+    captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())
 
     recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
 
@@ -154,6 +160,7 @@ class CustomerRegistrationForm(UserCreationForm):
         label='domisili',
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
     )
+    captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())
 
     recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
 
@@ -181,7 +188,7 @@ class CustomerRegistrationForm(UserCreationForm):
                 email=self.cleaned_data['email'],
                 nomor_hp=self.cleaned_data['nomor_hp']
             )
-            customer.groups.set([Group.objects.get('Customer')])
+            customer.user.groups.set([Group.objects.get(name='Customer')])
         return user
 
 class LoginForm(AuthenticationForm):
@@ -195,4 +202,6 @@ class LoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'}),
         label='Password'
     )
+    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
+
 

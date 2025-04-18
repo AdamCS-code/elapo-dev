@@ -47,7 +47,7 @@ def show_cart(request):
     
     if not cart:
         cart = Cart.objects.create(customer=customer, is_checked_out=False)
-    return render(request, 'show_cart.html', context={'cart_id': str(cart.id)})
+    return render(request, 'show_cart.html', context={'cart_id': str(cart.id), 'is_customer': True})
 
 @login_required
 @permission_required("cart.checkout_cart")

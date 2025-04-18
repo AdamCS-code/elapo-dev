@@ -33,12 +33,7 @@ class AdminRegistrationForm(UserCreationForm):
         widget=forms.TextInput(attrs={'class': 'form-input'})
     )
 
-<<<<<<< HEAD
     recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
-=======
-    captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
-
->>>>>>> master
    
     def check_email(self):
         email = self.cleaned_data['email']

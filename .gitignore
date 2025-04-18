@@ -1,6 +1,7 @@
 __pycache__
 *.pyc
 **/__pycache/
+**/migrations/
 
 env
 # Django

@@ -24,9 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUT = True
-# SECURITY WARNING: don't run with debug turned on in production!
-
+DEBUG = True
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 
@@ -135,5 +133,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-RECAPTCHA_PUBLIC_KEY = '6LeyMhcrAAAAAMdB972XAU8iyfyw76W5bMmPgX7E'
-RECAPTCHA_PRIVATE_KEY = '6LeyMhcrAAAAAI1maakIABNPyQbxPPjXqQ8RnOri'
+RECAPTCHA_PUBLIC_KEY = '6LdAHhcrAAAAACcCjd9v_fCqkyHB3tCo_QXxv1vp'
+RECAPTCHA_PRIVATE_KEY = '6LdAHhcrAAAAADUFvgQ0F7H65HD_gLKbHNKbda0W'

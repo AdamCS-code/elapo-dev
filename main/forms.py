@@ -33,8 +33,7 @@ class AdminRegistrationForm(UserCreationForm):
         widget=forms.TextInput(attrs={'class': 'form-input'})
     )
 
-    captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
-
+    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
    
     def check_email(self):
         email = self.cleaned_data['email']
@@ -94,6 +93,8 @@ class WorkerRegistrationForm(UserCreationForm):
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
     )
     captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())
+
+    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
 
     def check_email(self):
         email = self.cleaned_data['email']
@@ -156,6 +157,8 @@ class CustomerRegistrationForm(UserCreationForm):
     )
     captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())
 
+    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
+
     def check_email(self):
         email = self.cleaned_data['email']
         if User.objects.filter(email=email).exists():
@@ -184,6 +187,8 @@ class CustomerRegistrationForm(UserCreationForm):
         return user
 
 class LoginForm(AuthenticationForm):
+    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
+
     username = forms.EmailField(
         widget=forms.EmailInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'}),
         label='Email'

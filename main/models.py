@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
 
 domicile_choices = [
     ("jakut", "Jakarta Utara"),
@@ -18,6 +19,7 @@ domicile_choices = [
 ]
 
 class Admin(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=25)
     last_name = models.CharField(max_length=25)
@@ -25,6 +27,7 @@ class Admin(models.Model):
     email = models.EmailField(max_length=50)
 
 class Customer(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=25)
     last_name = models.CharField(max_length=25)
@@ -33,6 +36,7 @@ class Customer(models.Model):
     domicile = models.CharField(max_length=100, choices=domicile_choices, default="Domisili kamu dimana", blank=False)
 
 class Worker(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name = models.CharField(max_length=25)
     last_name = models.CharField(max_length=25)

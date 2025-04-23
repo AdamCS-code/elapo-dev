@@ -94,7 +94,7 @@ def worker_register(request):
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:
         form = WorkerRegistrationForm() 
-    return render(request, 'register_customer.html',{'form': form})
+    return render(request, 'register_worker.html',{'form': form})
 
 def logout_user(request):
     logout(request)

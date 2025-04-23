@@ -94,8 +94,6 @@ class WorkerRegistrationForm(UserCreationForm):
     )
     captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())
 
-    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
-
     def check_email(self):
         email = self.cleaned_data['email']
         if User.objects.filter(email=email).exists():
@@ -120,7 +118,7 @@ class WorkerRegistrationForm(UserCreationForm):
                 email=self.cleaned_data['email'],
                 nomor_hp=self.cleaned_data['nomor_hp']
             )
-            worker.user.groups.set([Group.Objects.get(name='Worker')])
+            worker.user.groups.set([Group.objects.get(name='Worker')])
 
         return user
 
@@ -156,8 +154,6 @@ class CustomerRegistrationForm(UserCreationForm):
         widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
     )
     captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())
-
-    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
 
     def check_email(self):
         email = self.cleaned_data['email']
@@ -197,6 +193,5 @@ class LoginForm(AuthenticationForm):
         widget=forms.PasswordInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'}),
         label='Password'
     )
-    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
 
 

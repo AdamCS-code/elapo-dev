@@ -9,6 +9,8 @@ from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 from .forms import AdminRegistrationForm, CustomerRegistrationForm, WorkerRegistrationForm, LoginForm
 from django.template.loader import render_to_string
+from django.db import IntegrityError
+
 
 @login_required(login_url='/login')
 def show_main_page(request): 
@@ -87,9 +89,12 @@ def worker_register(request):
     if request.method == 'POST':
         form = WorkerRegistrationForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Customer berhasil ditambahkan, silahkan login ya')
-            return redirect('main:login')
+            try:
+                form.save()
+                messages.success(request, 'Customer berhasil ditambahkan, silahkan login ya')
+                return redirect('main:login')
+            except IntegrityError:
+                messages.error(request, 'Username sudah terdaftar, silakan pilih username lain.')
         else:
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:

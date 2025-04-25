@@ -39,5 +39,5 @@ class Worker(models.Model):
     nomor_hp = models.CharField(max_length=16)
     email = models.EmailField(max_length=50)
     domicile = models.CharField(max_length=100, choices=domicile_choices, default="Domisili kamu dimana", blank=False)
-    rating = models.IntegerField(default=0)
-
+    rating = models.FloatField(default=0)
+    available = models.BooleanField(default=True)

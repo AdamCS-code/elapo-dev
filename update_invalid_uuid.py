@@ -10,8 +10,6 @@ def update_customer():
         ALTER TABLE main_customer RENAME TO main_customer_old
     ''')
 
-    
-
     pass
 
 def update_worker():

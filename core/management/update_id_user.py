@@ -77,11 +77,13 @@ def generate_sql_insert_query_cart():
         cart_data = json.load(file)
         cursor = connection.cursor()
         for cart in cart_data:
+            
             query = f'''INSERT INTO "cart_cart" ("id", "customer_id", "is_checked_out", "created_at")
-        VALUES ('{cart['pk']}', '{cart['fields']['customer']}', {cart['fields']['is_checked_out']}, '{cart['fields']['created_at']}')'''
+        VALUES ('{str(cart['pk']).replace('-','')}', '{str(cart['fields']['customer']).replace('-','')}', {cart['fields']['is_checked_out']}, '{cart['fields']['created_at']}')'''
             cursor.execute(query)
         connection.commit()
         connection.close()
+generate_sql_insert_query_cart()
 def generate_sql_insert_query_review():
     with open('review.json', 'r') as file:
         review_data = json.load(file)
@@ -95,5 +97,4 @@ def generate_sql_insert_query_review():
             cursor.execute(query)
         connection.commit()
         connection.close()
-generate_sql_insert_query_review()
 

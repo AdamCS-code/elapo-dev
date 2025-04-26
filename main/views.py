@@ -8,9 +8,9 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
 
-from main.models import Worker
+from main.models import Admin, Customer, Worker
 from worker.views import worker_required
-from .forms import AdminRegistrationForm, CustomerRegistrationForm, WorkerEditForm, WorkerRegistrationForm, LoginForm
+from .forms import AdminRegistrationForm, CustomerEditForm, CustomerRegistrationForm, WorkerEditForm, WorkerRegistrationForm, LoginForm
 from django.template.loader import render_to_string
 from django.db import IntegrityError
 from order.models import Order, OrderStatus
@@ -132,5 +132,41 @@ def edit_profile_worker(request):
             return redirect('worker:profile')
     else:
         form = WorkerEditForm(instance=worker)
+    
+    return render(request, 'edit_profile.html', {'form': form})
+
+def edit_profile_customer(request):
+    try:
+        customer = request.user.customer
+    except Customer.DoesNotExist:
+        messages.error(request, "Customer profile not found")
+        return redirect('main:home')
+    
+    if request.method == 'POST':
+        form = CustomerEditForm(request.POST, instance=customer)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('main:home')
+    else:
+        form = CustomerEditForm(instance=customer)
+    
+    return render(request, 'edit_profile.html', {'form': form})
+
+def edit_profile_admin(request):
+    try:
+        admin = request.user.admin
+    except Admin.DoesNotExist:
+        messages.error(request, "Admin profile not found")
+        return redirect('main:home')
+    
+    if request.method == 'POST':
+        form = AdminRegistrationForm(request.POST, instance=admin)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('main:home')
+    else:
+        form = AdminRegistrationForm(instance=admin)
     
     return render(request, 'edit_profile.html', {'form': form})

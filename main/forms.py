@@ -205,3 +205,26 @@ class WorkerEditForm(forms.ModelForm):
             'nomor_hp': forms.TextInput(attrs={'class': 'form-control'}),
             'domicile': forms.Select(attrs={'class': 'form-control'}),
         }
+
+
+class CustomerEditForm(forms.ModelForm):
+    class Meta:
+        model = Customer
+        fields = ['first_name', 'last_name', 'nomor_hp', 'domicile']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'nomor_hp': forms.TextInput(attrs={'class': 'form-control'}),
+            'domicile': forms.Select(attrs={'class': 'form-control'}),
+        }
+
+
+class AdminEditForm(forms.ModelForm):
+    class Meta:
+        model = Admin
+        fields = ['first_name', 'last_name', 'nomor_hp', 'email']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'First Name'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
+            'nomor_hp': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
+        }

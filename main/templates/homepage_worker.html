@@ -60,7 +60,7 @@
                 <div class="order-card">
                   <p><strong>Customer:</strong> {{ order.customer.user.username }}</p>
                   <p><strong>Delivery Fee:</strong> Rp{{ order.delivery_fee }}</p>
-                  <a href="{% url 'worker:take_order_status' order.order_id %}">
+                  <a href="{% url 'worker:take_order_status' order.id %}">
                     <button class="btn btn-primary">View Details</button>
                   </a>
                 </div>

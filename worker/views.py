@@ -5,6 +5,10 @@ from django.http import HttpResponseForbidden, HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from main.models import Worker
+from django.contrib import messages
+from django.db import transaction
+
+
 
 def worker_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
@@ -57,20 +61,38 @@ def take_order_status(request, pk):
             return HttpResponseForbidden("You are not linked to a worker profile")
 
         action = request.POST.get("action")
-
-        if action == "take":
-            order = OrderPayment.objects.get(order=order)
-            order.set_worker(worker)
-            order.order.status = OrderStatus.objects.filter(status='delivered').first()
-            order.order.save()
-            return redirect("order:order_detail", id=order_id)
         
+        if action == "take":
+            try:
+                with transaction.atomic():
+                    order = Order.objects.get(id=order_id)
+
+                    if order.worker is not None:
+                        messages.error(request, "This order has already been taken by someone else.")
+                        return redirect("worker:homepage")
+
+                    order.set_worker(worker)
+                    order.status = OrderStatus.objects.filter(status='delivered').first()
+                    worker.available = False
+
+                    order.save()
+                    worker.save()
+
+                    messages.success(request, "Order successfully taken.")
+                    return redirect("order:order_detail", id=order_id)
+                
+            except Order.DoesNotExist:
+                messages.error(request, "Order not found")
+                return redirect("main:home")
+
+
         elif action == "decline":
-            return redirect("worker:homepage")
+            messages.error(request, "Declined")
+            return redirect("main:home")
 
     elif request.method == "GET":
-        order = Order.objects.get(order_id=order_id)
-        customer = order.customer
+        order = Order.objects.get(id=order_id)
+        customer = order.cart.customer
         context = {
             "order_id": order_id,
             "customer": customer
@@ -107,7 +129,7 @@ def order_complete_page(request):
 @worker_required
 def worker_homepage(request):
     # Get available orders that are not taken by any worker
-    available_orders = OrderPayment.objects.filter(worker__isnull=True, order__status__status='ready')
+    available_orders = Order.objects.filter(worker__isnull=True)
     print("AVAILABLE ORDERS")
     print(available_orders)
     context = {"orders": available_orders, 'is_worker': True}

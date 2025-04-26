@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from .forms import AdminRegistrationForm, CustomerRegistrationForm, WorkerRegistrationForm, LoginForm
 from django.template.loader import render_to_string
 from django.db import IntegrityError
+from order.models import Order, OrderStatus
 
 
 @login_required(login_url='/login')
@@ -25,10 +26,16 @@ def show_main_page(request):
         print('not customer')
     try:
         worker = request.user.worker
+        available_orders = Order.objects.filter(worker__isnull=True)
+        print("AVAILABLE ORDERS")
+        print(available_orders)
+
         context = {
             'worker': request.user.worker,
-            'is_worker': True
+            'is_worker': True,
+            'orders': available_orders
         }
+
     except:
         print('not worker')
 
@@ -91,7 +98,7 @@ def worker_register(request):
         if form.is_valid():
             try:
                 form.save()
-                messages.success(request, 'Customer berhasil ditambahkan, silahkan login ya')
+                messages.success(request, 'Worker berhasil ditambahkan, silahkan login ya')
                 return redirect('main:login')
             except IntegrityError:
                 messages.error(request, 'Username sudah terdaftar, silakan pilih username lain.')

@@ -1,19 +1,32 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<h1>Order Action</h1>
+<div class="container py-5">
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h1 class="card-title mb-4">Take Order</h1>
 
-<h3>Customer Information</h3>
-<p><strong>Name:</strong> {{ customer.name }}</p>
-<p><strong>Address:</strong> {{ customer.domicile }}</p>
+      <h5 class="mb-3">Order Information</h5>
+      <ul class="list-group mb-4">
+        <li class="list-group-item"><strong>Name:</strong> {{ customer.last_name }}</li>
+        <li class="list-group-item"><strong>Domicile:</strong> {{ customer.domicile }}</li>
+        <!-- <li class="list-group-item"><strong>Delivery Fee:</strong> Rp{{ order.delivery_fee }}</li> -->
+        <li class="list-group-item"><strong>Product Cost:</strong> Rp{{ order.total }}</li>
+      </ul>
 
-<form method="post">
-  {% csrf_token %}
-  <label>Take Order?</label>
-  <br>
-  <button type="submit" name="action" value="take">Take Order</button>
-  <button type="submit" name="action" value="decline">Decline Order</button>
-</form>
+      <form method="post" class="text-center">
+        {% csrf_token %}
+        <p class="mb-3 fs-5">Do you want to take this order?</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+          <button type="submit" name="action" value="take" class="btn btn-success px-4">Take Order</button>
+          <button type="submit" name="action" value="decline" class="btn btn-outline-danger px-4">Decline Order</button>
+        </div>
+      </form>
 
-<a href="/">Back to Dashboard</a>
+      <div class="mt-4 text-center">
+        <a href="{% url 'main:home' %}" class="btn btn-link">⬅ Back to Dashboard</a>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock content %}

@@ -12,15 +12,20 @@ from django.db import transaction
 
 def worker_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            next_url = request.path
+            login_url = f"/login/?next={next_url}"
+            return redirect(login_url)
+        
         try:
             # check if the user is linked to a Worker profile
             worker = Worker.objects.get(user=request.user)
         except Worker.DoesNotExist:
-            return HttpResponseForbidden("Not authorized, you must be a worker!")
+            return redirect("main:login")
         return view_func(request, *args, **kwargs)
     return _wrapped_view
 
-@login_required
+
 @worker_required
 def complete_order(request, id):
     if request.method == 'POST':
@@ -42,7 +47,7 @@ def complete_order(request, id):
         wallet.save()
     return redirect('order:order_detail', id=id)
 
-@login_required
+
 @worker_required
 def take_order_status(request, pk):
     order_id = pk
@@ -99,17 +104,19 @@ def take_order_status(request, pk):
         }
         return render(request, "take_order_form.html", context=context)       
 
-@login_required
 @worker_required
-def complete_order_status(request):
+def complete_order_status(request, pk):
     if request.method == "POST":
-        worker = request.user
-        order_id = request.POST["order_id"]
+        user = request.user
+        order_id = pk
+
+        worker = Worker.objects.get(user=user)
 
         try:
-            order = Order.objects.get(order_id=order_id)
+            order = Order.objects.get(id=order_id)
         except Order.DoesNotExist:
-            return HttpResponseForbidden("Order not found")
+            messages.error(request, "Order not found")
+            return redirect("main:home")
 
         if order.worker.user_id == worker.user_id:
             order.status = OrderStatus.objects.filter('completed').first()
@@ -117,13 +124,18 @@ def complete_order_status(request):
         else:
             return HttpResponseForbidden("You are not authorized to complete this order")
 
+        worker.available = True
         order.save()
         return redirect("worker:order-complete-page")
     
     else:
-        return HttpResponseForbidden("Invalid request method")
+        messages.error(request, "Invalid request method")
+        return redirect("main:home")
+
+
 def order_complete_page(request):
     return render(request, "order_complete.html")
+
 
 
 @worker_required

@@ -7,7 +7,10 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
-from .forms import AdminRegistrationForm, CustomerRegistrationForm, WorkerRegistrationForm, LoginForm
+
+from main.models import Worker
+from worker.views import worker_required
+from .forms import AdminRegistrationForm, CustomerRegistrationForm, WorkerEditForm, WorkerRegistrationForm, LoginForm
 from django.template.loader import render_to_string
 from django.db import IntegrityError
 from order.models import Order, OrderStatus
@@ -111,3 +114,23 @@ def worker_register(request):
 def logout_user(request):
     logout(request)
     return redirect('main:home')
+
+
+@worker_required
+def edit_profile_worker(request):
+    try:
+        worker = Worker.objects.get(user=request.user)
+    except Worker.DoesNotExist:
+        messages.error(request, "Worker profile not found")
+        return redirect('main:home')
+    
+    if request.method == 'POST':
+        form = WorkerEditForm(request.POST, instance=worker)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile updated successfully!")
+            return redirect('worker:profile')
+    else:
+        form = WorkerEditForm(instance=worker)
+    
+    return render(request, 'edit_profile.html', {'form': form})

@@ -195,3 +195,13 @@ class LoginForm(AuthenticationForm):
     )
 
 
+class WorkerEditForm(forms.ModelForm):
+    class Meta:
+        model = Worker
+        fields = ['first_name', 'last_name', 'nomor_hp', 'domicile']
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'nomor_hp': forms.TextInput(attrs={'class': 'form-control'}),
+            'domicile': forms.Select(attrs={'class': 'form-control'}),
+        }

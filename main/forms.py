@@ -94,8 +94,6 @@ class WorkerRegistrationForm(UserCreationForm):
     )
     captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())
 
-    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
-
     def check_email(self):
         email = self.cleaned_data['email']
         if User.objects.filter(email=email).exists():
@@ -157,7 +155,6 @@ class CustomerRegistrationForm(UserCreationForm):
     )
     captcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())
 
-    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
 
     def check_email(self):
         email = self.cleaned_data['email']

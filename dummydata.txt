@@ -43,3 +43,9 @@ Customer
 Worker
 (id user_id)
 ('18b30555-f6ce-4420-9eaf-f6ee8ea7163c' 10)
+
+connected to table customer:
+- main_customer
+- cart_cart
+- review_review
+- review_fraudreport

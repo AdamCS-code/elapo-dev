@@ -1,0 +1,14 @@
+CREATE TABLE IF NOT EXISTS "cart_cart_old" ("id" char(32) NOT NULL PRIMARY KEY, "customer_id" bigint NOT NULL REFERENCES "main_customer" ("id") DEFERRABLE INITIALLY DEFERRED, "is_checked_out" bool NOT NULL, "created_at" date NOT NULL);
+CREATE INDEX "cart_cart_customer_id_bbe4c408" ON "cart_cart_old" ("customer_id");
+
+CREATE TABLE IF NOT EXISTS "cart_cart" ("id" char(32) NOT NULL PRIMARY KEY, "customer_id" char(32) NOT NULL REFERENCES "main_customer" ("id") DEFERRABLE INITIALLY DEFERRED, "is_checked_out" bool NOT NULL, "created_at" date NOT NULL);
+
+query = f'''INSERT INTO "cart_cart" ("id", "customer_id", "is_checked_out", "created_at")
+VALUES ('{}', '{}', {}, '{}')'''
+
+CREATE TABLE IF NOT EXISTS "review_review" ("review_id" char(32) NOT NULL PRIMARY KEY, "description" text NOT NULL, 
+"rating" integer NOT NULL, "customer_id" char(32) NOT NULL REFERENCES "main_customer" ("id") DEFERRABLE INITIALLY DEFERRED, "order_id" char(32) NOT NULL REFERENCES "order_order" ("id") DEFERRABLE INITIALLY DEFERRED);
+
+INSERT INTO "review_review_old" ("review_id", "description", "rating", "customer_id", "order_id")
+VALUES ('{review['pk']}', '{review['fields']['description']}', {review['fields']['rating']}, '{review['fields']['customer']}', '{review['fields']['order']}');
+

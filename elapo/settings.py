@@ -19,7 +19,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-
+load_dotenv()
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = True
@@ -131,5 +131,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-RECAPTCHA_PUBLIC_KEY = '6LdAHhcrAAAAACcCjd9v_fCqkyHB3tCo_QXxv1vp'
-RECAPTCHA_PRIVATE_KEY = '6LdAHhcrAAAAADUFvgQ0F7H65HD_gLKbHNKbda0W'
+RECAPTCHA_PUBLIC_KEY = '6LeyMhcrAAAAAMdB972XAU8iyfyw76W5bMmPgX7E'
+RECAPTCHA_PRIVATE_KEY = '6LeyMhcrAAAAAI1maakIABNPyQbxPPjXqQ8RnOri'

@@ -102,7 +102,7 @@ def order_detail(request, id):
     order = Order.objects.get(pk=id)
     product_carts = ProductCart.objects.filter(cart=order.cart)
 
-    role = get_user_role(request,user)
+    role = get_user_role(request.user)
     if role == 'Customer':
         if order.cart.customer != request.user.customer:
             return JsonResponse({'message': 'you are not belong to this order'}, status=400)
@@ -111,7 +111,7 @@ def order_detail(request, id):
             worker = OrderPayment.objects.get(order=order).worker
             if worker != request.user.worker:
                 return JsonResponse({'message': 'you are not belong to this order'}, status=400)
-        except Orderpayment.DoesNotExist:
+        except OrderPayment.DoesNotExist:
             return JsonResponse({'message': 'you are not belong this order'}, status=400)
 
     product_carts_json = [

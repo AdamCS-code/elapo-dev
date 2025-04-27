@@ -94,6 +94,7 @@ def show_payment(request, id):
 def pay_order(request, id):
     if (get_user_role(request.user) != 'Customer'):
         return JsonResponse({'message' : 'only customer could access this resource!'}, status=400)
+
     customer = request.user.customer
     order = Order.objects.get(pk=id)
     walletAccount = WalletAccount.objects.get(user=request.user)
@@ -124,12 +125,12 @@ def pay_order(request, id):
             walletAccount.reset_attempts_if_needed()
 
             if walletAccount.login_attempts > 3:
-                return JsonResponse({'message': 'you don\'t any attempt left, wait 10 minutes'})
+                return JsonResponse({'message': 'you don\'t any attempt left, wait 10 minutes'}, status=400)
 
             if walletAccount.check_pin(pin):
                 # check apakah uang pengguna cukup
                 if order.total > wallet.saldo:
-                    return JsonResponse({'message': 'fail because you don\'t have enough balance'})
+                    return JsonResponse({'message': 'fail because you don\'t have enough balance'}, status=400)
                 else:
                     update_wallet_balance(wallet, wallet.saldo - order.total)
                     update_product(order.cart)
@@ -137,7 +138,7 @@ def pay_order(request, id):
                     return redirect('order:order_detail', id=order.id)
 
         else:
-            return JsonResponse({'message': 'you entered wrong password'})
+            return JsonResponse({'message': 'you entered wrong password'}, status=400)
     else:
         form = PaymentForm()
         form = render_to_string('form_wallet.html', {'form': form}, request)
@@ -299,7 +300,6 @@ def wallet_dashboard(request):
     return render(request, 'show_wallet.html', context)
 
 def check_wallet_session(sessionId):
-    print(sessionId)
     try:
         wallet = WalletSession.objects.get(id=uuid.UUID(sessionId))
         if not wallet.is_expired():

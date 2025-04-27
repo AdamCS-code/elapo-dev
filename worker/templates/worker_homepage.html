@@ -1,31 +1,54 @@
 {% extends 'main.html' %}
 
 {% block content %}
-<!-- Main Content -->
-<div>
-  <h1>Welcome, Worker!</h1>
-  <p>This is your dashboard where you can manage tasks and check updates.</p>
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endfor %}
 </div>
+{% endif %}
 
-<!-- Candidate Orders -->
+<!-- Main Content -->
+<div class="container">
+<h1>Welcome, Worker!</h1>
+<p>You'll see available orders here when they come in.</p>
+
+<!-- Available Orders -->
 <div>
   <h2>Available Orders</h2>
-  {% if orders %}
-  {% for order in orders %}
-  <div style="border: 1px solid #ccc; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
-    <p><strong>Customer:</strong> {{ order.order.cart.customer.user.username }}</p>
-    <p><strong>Delivery Fee:</strong> {{ order.delivery_fee }}</p>
-
-    <form method="post" action="{% url 'worker:take_order_status' order.order_id %}">
-      {% csrf_token %}
-      <button type="submit" name="action" value="take">Take</button>
-      <button type="submit" name="action" value="decline">Decline</button>
-    </form>
-  </div>
-  {% endfor %}
+  {% if worker.available %}
+    {% if orders %}
+      <div class="row">
+        {% for order in orders %}
+          <div class="col-md-4">
+            <div class="order-card">
+              <p><strong>Customer:</strong> {{ order.customer.user.username }}</p>
+              <p><strong>Delivery Fee:</strong> Rp{{ order.delivery_fee }}</p>
+              <a href="{% url 'worker:take_order_status' order.order_id %}">
+                <button class="btn btn-primary">View Details</button>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no-orders-message">
+        <p>No orders available at the moment. Please wait...</p>
+      </div>
+    {% endif %}
   {% else %}
-  <p>No orders available at the moment.</p>
+    <p>You're currently not available to receive orders.</p>
   {% endif %}
+</div>
+</div>
+
+
 </div>
 
 {% endblock content %}

@@ -7,6 +7,6 @@ urlpatterns = [
     path('order-worker', show_order_worker, name='show_order_worker'),
     path('order-admin', show_order_admin, name='show_order_admin'),
     path('order-gateway', show_order, name='order_gateway'),
-    path('<str:id>/', order_detail, name='order_detail'),
+    path('<uuid:id>/', order_detail, name='order_detail'),
     path('<str:id>/cancel/', cancel_order, name='cancel_order'),
 ]

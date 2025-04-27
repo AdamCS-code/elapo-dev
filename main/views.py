@@ -7,13 +7,39 @@ from django.db.models import Q
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse
-
 from main.models import Admin, Customer, Worker
 from worker.views import worker_required
 from .forms import AdminRegistrationForm, CustomerEditForm, CustomerRegistrationForm, WorkerEditForm, WorkerRegistrationForm, LoginForm
 from django.template.loader import render_to_string
 from django.db import IntegrityError
 from order.models import Order, OrderStatus
+from django.core.cache import cache
+from django.http import HttpResponseForbidden
+import time
+
+def rate_limit(key_func, rate='5/s', block_time=60):
+    def decorator(view_func):
+        def wrapper(request, *args, **kwargs):
+            key = key_func(request)
+            rate_num, rate_period = rate.split('/')
+            period = {'s': 1, 'm': 60, 'h': 3600, 'd': 86400}[rate_period]
+            
+            history = cache.get(key, [])
+            now = time.time()
+            
+            # Remove old requests
+            history = [t for t in history if now - t <= period]
+            
+            if len(history) >= int(rate_num):
+                if block_time:
+                    cache.set(key, history, block_time)
+                return render(request, "rate_limit_exceeded.html", {"retry_after": block_time})
+                
+            history.append(now)
+            cache.set(key, history, period)
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
 
 
 @login_required(login_url='/login')
@@ -61,6 +87,7 @@ def show_register(request):
     return render(request, 'register.html', context={'user': request.user})
 
 @csrf_protect
+@rate_limit(lambda req: f"login:{req.META['REMOTE_ADDR']}", rate='5/m')
 def login(request):
     if request.method == 'POST':
         form = LoginForm(data=request.POST)

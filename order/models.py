@@ -23,9 +23,6 @@ class Order(models.Model):
     total = models.DecimalField(max_digits=12, decimal_places=0, default=0)
     created_at = models.DateField(auto_now=True)
     status = models.ForeignKey(OrderStatus, on_delete=models.CASCADE)
-    worker = models.ForeignKey(Worker, related_name="orders", on_delete=models.SET_NULL, null=True, blank=True)
-    delivery_fee = models.DecimalField(max_digits=12, decimal_places=0, default=0)
-
     @property
     def can_be_cancelled(self):
         cancellable_statuses = ['not paid', 'paid', 'prepared']

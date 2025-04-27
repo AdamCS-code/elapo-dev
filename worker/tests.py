@@ -1,5 +1,6 @@
 from django.http import HttpResponseForbidden
 from django.test import TestCase, Client
+from wallet.models import OrderPayment, Wallet, WalletAccount
 from django.contrib.auth.models import User, Permission
 from django.urls import reverse
 from django.contrib import messages
@@ -18,6 +19,13 @@ class WorkerTakeOrderTest(TestCase):
             username='customer',
             password='testpass123',
             email='customer@example.com'
+        )
+        self.customer_walletaccount = WalletAccount.objects.create(
+            user=self.customer_user,
+            pin='123456',
+        )
+        self.customer_wallet = Wallet.objects.create(
+            walletAccount=self.customer_walletaccount
         )
         self.customer = Customer.objects.create(
             user=self.customer_user,
@@ -78,7 +86,10 @@ class WorkerTakeOrderTest(TestCase):
             cart=self.cart,
             status=self.pending_status,
             total=100000,
-            delivery_fee=20000
+        )
+        self.orderPayment = OrderPayment.objects.create(
+            walletAccount=self.customer_walletaccount,
+            order=self.order
         )
 
         self.client = Client()
@@ -89,7 +100,6 @@ class WorkerTakeOrderTest(TestCase):
     def test_take_order_unauthenticated(self):
         response = self.client.get(self.take_order_url)
         self.assertRedirects(response, f'/login/?next={self.take_order_url}')
-
 
     def test_take_order_not_worker(self):
         self.client.login(username='customer', password='testpass123')
@@ -110,9 +120,9 @@ class WorkerTakeOrderTest(TestCase):
         
         self.order.refresh_from_db()
         self.worker.refresh_from_db()
-        
+        self.orderPayment = OrderPayment.objects.get(order=self.order) 
         self.assertRedirects(response, reverse('order:order_detail', kwargs={'id': self.order.id}))
-        self.assertEqual(self.order.worker, self.worker)
+        self.assertEqual(self.orderPayment.worker, self.worker)
         self.assertEqual(self.order.status.status, 'delivered')
         self.assertFalse(self.worker.available)
 
@@ -122,8 +132,9 @@ class WorkerTakeOrderTest(TestCase):
             user=User.objects.create_user(username='other_worker', password='testpass123'),
             available=True
         )
-        self.order.worker = other_worker
-        self.order.save()
+        self.orderPayment = OrderPayment.objects.get(order=self.order)
+        self.orderPayment.worker = other_worker
+        self.orderPayment.save()
         
         self.client.login(username='worker', password='testpass123')
         response = self.client.post(self.take_order_url, {'action': 'take'})
@@ -158,7 +169,10 @@ class WorkerTakeOrderTest(TestCase):
             cart=another_cart,
             status=self.pending_status,
             total=50000,
-            delivery_fee=15000
+        )
+        self.orderPayment_other = OrderPayment.objects.create(
+            order=another_order,
+            walletAccount=self.customer_walletaccount,
         )
 
         self.client.login(username='worker', password='testpass123')
@@ -168,15 +182,15 @@ class WorkerTakeOrderTest(TestCase):
         self.assertTemplateUsed(response, 'worker_homepage.html')
         
         # Check both orders appear in context (since neither has a worker)
-        self.assertEqual(len(response.context['orders']), 2)
+        self.assertEqual(len(response.context['orders']),2)
         self.assertIn(self.order, response.context['orders'])
         self.assertIn(another_order, response.context['orders'])
         
 
     def test_worker_homepage_hides_taken_orders(self):
         # Assign our test order to the worker
-        self.order.worker = self.worker
-        self.order.save()
+        self.orderPayment.worker = self.worker
+        self.orderPayment.save()
 
         self.client.login(username='worker', password='testpass123')
         response = self.client.get(reverse('worker:homepage'))
@@ -196,12 +210,15 @@ class WorkerTakeOrderTest(TestCase):
                 quantity=1,
                 cart=cart
             )
-            Order.objects.create(
+            order = Order.objects.create(
                 id=uuid.uuid4(),
                 cart=cart,
                 status=self.pending_status,
                 total=50000,
-                delivery_fee=15000
+            )
+            OrderPayment.objects.create(
+            walletAccount=self.customer_walletaccount,
+                order=order
             )
         
         # Make worker unavailable
@@ -296,9 +313,17 @@ class CompleteOrderStatusTest(TestCase):
             id=uuid.uuid4(),
             cart=self.cart,
             status=self.delivered_status,
-            worker=self.worker,
             total=100000,
-            delivery_fee=20000
+        )
+        self.customer_walletaccount = WalletAccount.objects.create(
+            user=self.customer_user,
+            pin='123123'
+        )
+        self.orderPayment = OrderPayment.objects.create(
+            order=self.order,
+            walletAccount=self.customer_walletaccount,
+            delivery_fee=20000,
+            worker=self.worker
         )
 
         # Test client and URLs
@@ -330,8 +355,8 @@ class CompleteOrderStatusTest(TestCase):
 
     def test_complete_other_workers_order(self):
         # Assign order to other worker
-        self.order.worker = self.other_worker
-        self.order.save()
+        self.orderPayment.worker = self.other_worker
+        self.orderPayment.save()
         
         self.client.login(username='worker1', password='testpass123')
         response = self.client.post(self.complete_url)

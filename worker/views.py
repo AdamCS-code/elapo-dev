@@ -8,8 +8,6 @@ from main.models import Worker
 from django.contrib import messages
 from django.db import transaction
 
-
-
 def worker_required(view_func):
     def _wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
@@ -54,7 +52,10 @@ def take_order_status(request, pk):
     
     try:
         order = Order.objects.get(id=order_id)
+        orderPayment = OrderPayment.objects.get(order=order)
     except Order.DoesNotExist:
+        return HttpResponseForbidden("Order not found")
+    except OrderPayment.DoesNotExist:
         return HttpResponseForbidden("Order not found")
 
     if request.method == "POST":
@@ -71,17 +72,21 @@ def take_order_status(request, pk):
             try:
                 with transaction.atomic():
                     order = Order.objects.get(id=order_id)
+                    orderPayment = OrderPayment.objects.get(order=order)
+                    print(orderPayment.worker)
 
-                    if order.worker is not None:
+                    if orderPayment.worker is not None:
                         messages.error(request, "This order has already been taken by someone else.")
                         return redirect("main:home")
-
-                    order.set_worker(worker)
+                    orderPayment.worker = worker
                     order.status = OrderStatus.objects.filter(status='delivered').first()
                     worker.available = False
 
                     order.save()
+                    orderPayment.save()
                     worker.save()
+
+                    print(orderPayment.worker)
 
                     messages.success(request, "Order successfully taken.")
                     return redirect("order:order_detail", id=order_id)
@@ -115,11 +120,15 @@ def complete_order_status(request, pk):
 
         try:
             order = Order.objects.get(id=order_id)
+            orderPayment = OrderPayment.objects.get(order=order)
         except Order.DoesNotExist:
             messages.error(request, "Order not found")
             return redirect("main:home")
+        except OrderPayment.DoesNotExist:
+            messages.error(request, "Order not found")
+            return redirect("main:home")
 
-        if order.worker.user_id == worker.user_id:
+        if orderPayment.worker.user_id == worker.user_id:
             completed_status = OrderStatus.objects.get(status='completed')
             order.status = completed_status  
             worker.available = True
@@ -143,7 +152,14 @@ def order_complete_page(request):
 @worker_required
 def worker_homepage(request):
     # Get available orders that are not taken by any worker
-    available_orders = Order.objects.filter(worker__isnull=True)
+    orderPayment = OrderPayment.objects.all()
+    available_orders = []
+    for order in orderPayment:
+        if not order.worker:
+            # available
+            available_orders.append(order.order)
+
+
     print("AVAILABLE ORDERS")
     print(available_orders)
     context = {"orders": available_orders, 'is_worker': True}

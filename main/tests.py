@@ -870,7 +870,3 @@ class EditAdminProfileTest(TestCase):
 
         form = response.context['form']
         self.assertEqual(form.errors.get("last_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
-
-
-
-

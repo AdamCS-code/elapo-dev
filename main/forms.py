@@ -31,9 +31,7 @@ class AdminRegistrationForm(UserCreationForm):
         max_length=69,
         label='Nomor HP',
         widget=forms.TextInput(attrs={'class': 'form-input'})
-    )
-
-    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
+    )  
    
     def check_email(self):
         email = self.cleaned_data['email']
@@ -195,5 +193,3 @@ class LoginForm(AuthenticationForm):
         label='Password'
     )
     recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
-
-

@@ -9,6 +9,20 @@ from order.models import Order, OrderStatus
 from product.views import get_product 
 from product.models import Product
 from django.http import JsonResponse
+from django.shortcuts import redirect
+from main.models import Admin
+
+def admin_required(view_func):
+    def _wrapped_view(request, *args, **kwargs):
+        try:
+            Admin.objects.get(user=request.user)
+            # User is an admin, allow
+            return view_func(request, *args, **kwargs)
+        except Admin.DoesNotExist:
+            # User is NOT an admin
+            return redirect('administrator:no_permission')
+    return _wrapped_view
+
 @login_required
 def dashboard(request):
     users = User.objects.all().order_by('-date_joined')
@@ -39,6 +53,7 @@ def dashboard(request):
 
 
 @login_required
+@admin_required
 def delete_user(request, user_id):
     # Check if the current user is an admin
     try:
@@ -46,7 +61,7 @@ def delete_user(request, user_id):
         # User is an admin, proceed with deletion
     except Admin.DoesNotExist:
         # User is not an admin, redirect to no permission page
-        return redirect('no_permission')
+        return redirect('administrator:no_permission')
 
     user_to_delete = get_object_or_404(User, id=user_id)
 
@@ -64,12 +79,13 @@ def no_permission(request):
     return render(request, 'no_permission.html', status=403)
 
 @login_required
+@admin_required
 def create_product(request):
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('administrator:create_product')  # Ganti dengan nama URL tujuan
+            return redirect('administrator:product_dashboard')
     else:
         form = ProductForm()
     return render(request, 'create_product.html', {'form': form})
@@ -82,6 +98,7 @@ def product_dashboard(request):
     return render(request, 'product_dashboard.html', {'products': products, 'is_admin': True})
 
 @login_required
+@admin_required
 def update_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
 
@@ -97,6 +114,7 @@ def update_product(request, product_id):
 
 @login_required
 @require_POST
+@admin_required
 def delete_product(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     product.delete()
@@ -119,6 +137,7 @@ def all_product(request):
     return JsonResponse(data={'products' : product_json})
 
 @login_required
+@admin_required
 def process_order(request, order_id):
     order = Order.objects.get(pk=order_id)
     order.status = OrderStatus.objects.filter(status='ready').first()

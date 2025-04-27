@@ -95,4 +95,57 @@ def generate_sql_insert_query_review():
             cursor.execute(query)
         connection.commit()
         connection.close()
-
+def update_admin_id_to_uuid():
+    cursor = connection.cursor()
+    cursor.execute("select * from main_admin")
+    pair_admins = []
+    admins = cursor.fetchall()
+    for admin in admins:
+        pair = (admin, uuid.uuid4()) 
+        pair_admins.append(pair)
+    cursor.execute("select * from administrator_adminactivitylog")
+    print(pair_admins)
+    data = []
+    adminlog = cursor.fetchall()
+    for log in adminlog:
+        for pair in pair_admins:
+            if log[3] == pair[0][0]:
+                temp_log = log
+                temp_log = list(temp_log)
+                temp_log[0] = str(uuid.uuid4()).replace("-", "")
+                temp_log[3] = str(pair[1]).replace("-", "")
+                data.append(tuple(temp_log))
+    print(data)
+    data2 = []
+    for pair in pair_admins:
+        temp_admin = pair[0]
+        temp_admin = list(temp_admin)
+        temp_admin[0] = str(pair[1]).replace("-", "")
+        data2.append(tuple(temp_admin))
+    print(data2)
+    cursor.execute("ALTER TABLE administrator_adminactivitylog RENAME TO administrator_adminactivitylog_old")
+    insert_query = '''CREATE TABLE IF NOT EXISTS "administrator_adminactivitylog" ("id" char(32) NOT NULL PRIMARY KEY, "action" text NOT NULL, "timestamp" datetime NOT NULL, "admin_id" char(32) NOT NULL REFERENCES "main_admin" ("id") DEFERRABLE INITIALLY DEFERRED);'''
+    cursor.execute(insert_query)
+    cursor.execute("ALTER TABLE main_admin RENAME TO main_admin_old")
+    insert_query = '''CREATE TABLE IF NOT EXISTS "main_admin" (
+    "id" char(32) NOT NULL PRIMARY KEY,
+    "first_name" varchar(25) NOT NULL,
+    "last_name" varchar(25) NOT NULL,
+    "nomor_hp" varchar(16) NOT NULL,
+    "email" varchar(50) NOT NULL,
+    "user_id" integer NOT NULL UNIQUE REFERENCES "auth_user" ("id") DEFERRABLE INITIALLY DEFERRED
+);'''
+    cursor.execute(insert_query)
+    for d in data2:
+        query = f'''
+        INSERT INTO main_admin (first_name, last_name, nomor_hp, email, user_id)
+        values
+            ('{d[0]}', '{d[1]}', '{d[2]}', '{d[3]}', '{d[4]}', {d[5]})
+        ;'''
+    for d in data:
+        query = f'''
+        INSERT INTO administrator_adminactivitylog (id, action, timestamp, admin_id)
+        values 
+            ('{d[0]}', '{d[1]}', '{d[2]}', '{d[3]}')
+        '''
+update_admin_id_to_uuid()

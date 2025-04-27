@@ -96,9 +96,14 @@ def pay_order(request, id):
         return JsonResponse({'message' : 'only customer could access this resource!'}, status=400)
 
     customer = request.user.customer
-    order = Order.objects.get(pk=id)
+    try:
+        order = Order.objects.get(pk=id)
+    except:
+        return JsonResponse({'message': 'order is not exist'}, status=400)
     walletAccount = WalletAccount.objects.get(user=request.user)
     wallet = Wallet.objects.get(walletAccount=walletAccount)
+    if order.status.id == uuid.UUID(PAID_STATUS_ID):
+        return JsonResponse({'message': 'Already paid'}, status=400)
 
     # check apakah sudah terautentikasi
     try:
@@ -113,13 +118,12 @@ def pay_order(request, id):
     
     if order.cart.customer != customer:
         return JsonResponse({'message': 'fail because you are not the one who order it, sorry'}, status=400)
-    
-
+        
     orderPayment, _ = OrderPayment.objects.get_or_create(order=order, walletAccount=walletAccount)
     if request.method == 'POST':
         form = PaymentForm(request.POST)
-        if form.is_valid():
 
+        if form.is_valid():
             pin = form.cleaned_data['pin']
 
             walletAccount.reset_attempts_if_needed()
@@ -135,6 +139,7 @@ def pay_order(request, id):
                     update_wallet_balance(wallet, wallet.saldo - order.total)
                     update_product(order.cart)
                     update_order_status(order, PAID_STATUS_ID)
+                    print('updated loh')
                     return redirect('order:order_detail', id=order.id)
 
         else:

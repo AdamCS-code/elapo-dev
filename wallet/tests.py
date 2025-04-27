@@ -78,25 +78,40 @@ class WalletTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('wallet:show_wallet'))
 
-    def test_authenticated_user_with_wallet_can_pay_order(self):
+    def test_authenticated_user_with_wallet_can_topup(self):
         self.login_customer()
 
+        # Buat WalletSession
         wallet_session = WalletSession.objects.create(walletAccount=self.wallet_account)
 
+        # Simpan walletSession di session
         session = self.client.session
         session['walletSession'] = str(wallet_session.id)
         session.save()
-        # 1. Dapatkan halaman yang mengandung csrf_token
+
+        # Dapatkan halaman form (GET)
         response = self.client.get(reverse('wallet:topup_wallet'))
-
-        # 2. Ambil csrf_token dari cookies
-        csrf_token = response.cookies['csrftoken'].value
-
-        response = self.client.post(reverse('wallet:pay_order', args=[self.order.id]), {'pin': '1234', 'csrfmiddlewaretoken': csrf_token,})
         self.assertEqual(response.status_code, 200)
-        self.order.refresh_from_db()
-        #self.assertEqual(str(self.order.status.id), '22222222222222222222222222222222')  # paid status
-'''
+
+        # Ambil csrf_token dari halaman
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(response.content, 'html.parser')
+        csrf_token = soup.find('input', {'name': 'csrfmiddlewaretoken'})['value']
+
+        # Kirim POST request untuk top-up
+        response = self.client.post(
+            reverse('wallet:topup_wallet'),
+            {
+                'amount': 500,
+                'csrfmiddlewaretoken': csrf_token,
+            },
+            follow=True
+        )
+        self.assertEqual(response.status_code, 200)
+
+        # Pastikan saldo wallet bertambah
+        self.wallet.refresh_from_db()
+        self.assertEqual(self.wallet.saldo, 1500)
     # =============== UNHAPPY PATHS ===============
 
     def test_unauthenticated_user_login_wallet_redirects(self):
@@ -124,7 +139,7 @@ class WalletTests(TestCase):
         self.login_customer()
         self.create_wallet_session()
         response = self.client.post(reverse('wallet:pay_order', args=[uuid.uuid4()]), {'pin': '1234'})
-        self.assertEqual(response.status_code, 404)
+        self.assertContains(response, 'order is not exist', status_code=400)
 
     def test_authenticated_user_pay_order_already_paid(self):
         self.login_customer()
@@ -134,20 +149,20 @@ class WalletTests(TestCase):
         self.order.save()
 
         response = self.client.post(reverse('wallet:pay_order', args=[self.order.id]), {'pin': '1234'})
-        self.assertContains(response, 'fail because you are not the one who order it', status_code=400)
+        self.assertContains(response, 'Already paid', status_code=400)
 
     def test_authenticated_user_pay_order_not_own(self):
         # Another customer
         user2 = User.objects.create_user(username='othercustomer', password='password123')
+        customer2 = Customer.objects.create(user=user2)
         user2.groups.add(Group.objects.get(name='Customer'))
-        cart2 = Cart.objects.create(customer=user2.customer)
+        cart2 = Cart.objects.create(customer=customer2)
         order2 = Order.objects.create(cart=cart2, status=self.order_status, total=500)
 
         self.login_customer()
         self.create_wallet_session()
         response = self.client.post(reverse('wallet:pay_order', args=[order2.id]), {'pin': '1234'})
-        self.assertContains(response, 'fail because you are not the one who order it', status_code=400)
-
+        self.assertContains(response, 'fail because you are not the one who order it, sorry', status_code=400)
     # =============== OWASP / SECURITY PATHS ===============
 
     def test_expired_wallet_session_deleted(self):
@@ -175,4 +190,3 @@ class WalletTests(TestCase):
 
         response = self.client.get(reverse('wallet:show_wallet'))
         self.assertEqual(response.status_code, 302)
-'''

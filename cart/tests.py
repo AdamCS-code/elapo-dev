@@ -434,3 +434,24 @@ class CartViewsTestCase(TestCase):
         # Try to view cart
         response = client.get(reverse('cart:show_cart'))
         self.assertEqual(response.status_code, 403)
+
+    def test_csrf_protection_on_create_cart(self):
+        """Test CSRF protection on create cart POST"""
+        client = Client(enforce_csrf_checks=True)
+        client.login(username='customer', password='password123')
+        
+        url = reverse('cart:add_product_cart')
+        # POST tanpa CSRF token
+        response = client.post(url, data={'message': 'Test CSRF attack'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_ssrf_attempt_by_header_manipulation(self):
+        """Test SSRF attempt by manipulating headers on viewing cart"""
+        url = reverse('cart:show_cart')
+        response = self.client.get(
+            url,
+            HTTP_HOST='evil-site.com',
+            HTTP_REFERER='http://evil-site.com'
+        )
+    
+        self.assertEqual(response.status_code, 400)

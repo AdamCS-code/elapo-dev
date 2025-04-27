@@ -14,22 +14,22 @@ from cart.models import Cart
 class AdminViewsTestCase(TestCase):
     def setUp(self):
         self.regular_user = User.objects.create_user(
-        username='regular_user', password='password123'
+        username='regular_user', password='password123', first_name='regular', last_name='user', 
         )
         self.customer_user = User.objects.create_user(
-            username='customer_user', password='password123'
+            username='customer_user', password='password123' , first_name='customer', last_name='user', 
         )
         self.worker_user = User.objects.create_user(
-            username='worker_user', password='password123'
+            username='worker_user', password='password123',first_name='customer', last_name='user', 
         )
         self.admin_user = User.objects.create_user(
-            username='admin_user', password='password123'
+            username='admin_user', password='password123', first_name='customer', last_name='user' , 
         )
         
         # Create role assignments (Customer, Worker, Admin) if needed
-        self.customer = Customer.objects.create(user=self.customer_user)
-        self.worker = Worker.objects.create(user=self.worker_user)
-        self.admin = Admin.objects.create(user=self.admin_user)
+        self.customer = Customer.objects.create(user=self.customer_user, first_name='customer', last_name='user', email="regular_user@gmail.com", nomor_hp="081324545960")
+        self.worker = Worker.objects.create(user=self.worker_user, first_name='customer', last_name='user', email="customer_user@gmail.com", nomor_hp="082451324965")
+        self.admin = Admin.objects.create(user=self.admin_user, first_name='customer', last_name='user', email="worker_user@gmail.com", nomor_hp="082476534986")
         self.ready_status = OrderStatus.objects.create(id=uuid.uuid4(), status='ready')
         
         # Create Cart for the Order (OneToOneField to Cart)

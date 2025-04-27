@@ -4,11 +4,13 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from unittest.mock import patch
-from main.forms import AdminRegistrationForm, LoginForm
+from main.forms import AdminEditForm, AdminRegistrationForm, LoginForm, WorkerEditForm
 from main.models import Admin, Customer, Worker
 from django.contrib.messages import get_messages
 from django.contrib.auth.models import Group
 import html
+from django.contrib.auth import get_user_model
+
 
 class LoginTests(TestCase):
     @classmethod
@@ -369,3 +371,506 @@ class AdminRegistrationTests(TestCase):
         form = AdminRegistrationForm(data=form_data)
         self.assertFalse(form.is_valid())
         self.assertEqual(form.errors['password2'][0], "The two password fields didn’t match.")
+
+
+
+class EditWorkerProfileTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        
+        # Create test user - with username if required
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='testuser@example.com',  # Add this if your model requires username
+            email='testuser@example.com', 
+            password='password123'
+        )
+        
+        # Create Worker instance
+        self.worker = Worker.objects.create(
+            user=self.user,
+            first_name="TestWorkerFirstName",
+            last_name="TestWorkerLastName",
+            nomor_hp="081234567890",
+            email="testworker@example.com"
+        )
+        
+        # Test data
+        self.worker_data = {
+            'first_name': 'UpdatedFirstName',
+            'last_name': 'UpdatedLastName',
+            'nomor_hp': '089876543210',
+            'domicile': 'jaksel'
+        }
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_worker_edit_form_valid(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        # Perform login with captcha field
+        login_url = reverse('main:login')
+        login_response = self.client.post(login_url, {
+            'username': 'testuser@example.com',
+            'password': 'password123',
+            'g-recaptcha-response': 'test',
+        })
+        self.assertEqual(login_response.status_code, 302)  
+
+
+        edit_url = reverse('main:edit_profile_worker')  
+        response = self.client.get(edit_url)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(edit_url, self.worker_data)
+        self.assertEqual(response.status_code, 302)
+        
+        self.worker.refresh_from_db()
+        self.assertEqual(self.worker.first_name, 'UpdatedFirstName')
+        self.assertEqual(self.worker.nomor_hp, '089876543210')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_worker_invalid_phone_number(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_worker')
+        
+        # Invalid phone number (too short)
+        invalid_data = self.worker_data.copy()
+        invalid_data['nomor_hp'] = '123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')  
+
+        # Invalid phone number (too long)
+        invalid_data['nomor_hp'] = '12345678901234567890'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_worker_invalid_names(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_worker')
+
+        # Invalid first name (contains number)
+        invalid_data = self.worker_data.copy()
+        invalid_data['first_name'] = 'John123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("first_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        # Invalid last name (contains special characters/code)
+        invalid_data = self.worker_data.copy()
+        invalid_data['last_name'] = '<script>alert("XSS")</script>'  # XSS payload
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200) 
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("last_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+
+
+
+class EditCustomerProfileTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        
+        # Create test user - with username if required
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='testuser@example.com',  # Add this if your model requires username
+            email='testuser@example.com', 
+            password='password123'
+        )
+        
+        # Create Customer instance
+        self.customer = Customer.objects.create(
+            user=self.user,
+            first_name="TestCustFirstName",
+            last_name="TestCustLastName",
+            nomor_hp="081234567890",
+            email="testcust@example.com"
+        )
+        
+        # Test data
+        self.customer_data = {
+            'first_name': 'UpdatedFirstName',
+            'last_name': 'UpdatedLastName',
+            'nomor_hp': '089876543210',
+            'domicile': 'jakut'
+        }
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_cust_edit_form_valid(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        # Perform login with captcha field
+        login_url = reverse('main:login')
+        login_response = self.client.post(login_url, {
+            'username': 'testuser@example.com',
+            'password': 'password123',
+            'g-recaptcha-response': 'test',
+        })
+        self.assertEqual(login_response.status_code, 302)  
+
+
+        edit_url = reverse('main:edit_profile_customer')  
+        response = self.client.get(edit_url)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(edit_url, self.cust_data)
+        self.assertEqual(response.status_code, 302)
+        
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.first_name, 'UpdatedFirstName')
+        self.assertEqual(self.customer.nomor_hp, '089876543210')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_cust_invalid_phone_number(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_customer')
+        
+        # Invalid phone number (too short)
+        invalid_data = self.customer_data.copy()
+        invalid_data['nomor_hp'] = '123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')  
+
+        # Invalid phone number (too long)
+        invalid_data['nomor_hp'] = '12345678901234567890'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_customer_invalid_names(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_customer')
+
+        # Invalid first name (contains number)
+        invalid_data = self.customer_data.copy()
+        invalid_data['first_name'] = 'John123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("first_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        # Invalid last name (contains special characters/code)
+        invalid_data = self.customer_data.copy()
+        invalid_data['last_name'] = '<script>alert("XSS")</script>'  # XSS payload
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200) 
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("last_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+
+
+
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_customer_edit_form_valid(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        # Perform login with captcha field
+        login_url = reverse('main:login')
+        login_response = self.client.post(login_url, {
+            'username': 'testuser@example.com',
+            'password': 'password123',
+            'g-recaptcha-response': 'test',
+        })
+        self.assertEqual(login_response.status_code, 302)  
+
+
+        edit_url = reverse('main:edit_profile_customer')  
+        response = self.client.get(edit_url)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(edit_url, self.customer_data)
+        self.assertEqual(response.status_code, 302)
+        
+        self.customer.refresh_from_db()
+        self.assertEqual(self.customer.first_name, 'UpdatedFirstName')
+        self.assertEqual(self.customer.nomor_hp, '089876543210')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_customer_invalid_phone_number(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_customer')
+        
+        # Invalid phone number (too short)
+        invalid_data = self.customer_data.copy()
+        invalid_data['nomor_hp'] = '123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')  
+
+        # Invalid phone number (too long)
+        invalid_data['nomor_hp'] = '12345678901234567890'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_customer_invalid_names(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_customer')
+
+        # Invalid first name (contains number)
+        invalid_data = self.customer_data.copy()
+        invalid_data['first_name'] = 'John123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("first_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        # Invalid last name (contains special characters/code)
+        invalid_data = self.customer_data.copy()
+        invalid_data['last_name'] = '<script>alert("XSS")</script>'  # XSS payload
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200) 
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("last_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+
+
+
+
+class EditAdminProfileTest(TestCase):
+    def setUp(self):
+        self.client = Client()
+        
+        # Create test user - with username if required
+        User = get_user_model()
+        self.user = User.objects.create_user(
+            username='testuser@example.com',  # Add this if your model requires username
+            email='testuser@example.com', 
+            password='password123'
+        )
+        
+        # Create Admin instance
+        self.admin = Admin.objects.create(
+            user=self.user,
+            first_name="TestCustFirstName",
+            last_name="TestCustLastName",
+            nomor_hp="081234567890",
+            email="testcust@example.com"
+        )
+        
+        # Test data
+        self.admin_data = {
+            'first_name': 'UpdatedFirstName',
+            'last_name': 'UpdatedLastName',
+            'nomor_hp': '089876543210',
+        }
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_admin_edit_form_valid(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        # Perform login with captcha field
+        login_url = reverse('main:login')
+        login_response = self.client.post(login_url, {
+            'username': 'testuser@example.com',
+            'password': 'password123',
+            'g-recaptcha-response': 'test',
+        })
+        self.assertEqual(login_response.status_code, 302)  
+
+
+        edit_url = reverse('main:edit_profile_admin')  
+        response = self.client.get(edit_url)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(edit_url, self.admin_data)
+        self.assertEqual(response.status_code, 302)
+        
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.first_name, 'UpdatedFirstName')
+        self.assertEqual(self.admin.nomor_hp, '089876543210')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_admin_invalid_phone_number(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_admin')
+        
+        # Invalid phone number (too short)
+        invalid_data = self.admin_data.copy()
+        invalid_data['nomor_hp'] = '123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')  
+
+        # Invalid phone number (too long)
+        invalid_data['nomor_hp'] = '12345678901234567890'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_admin_invalid_names(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_admin')
+
+        # Invalid first name (contains number)
+        invalid_data = self.admin_data.copy()
+        invalid_data['first_name'] = 'John123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("first_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        # Invalid last name (contains special characters/code)
+        invalid_data = self.admin_data.copy()
+        invalid_data['last_name'] = '<script>alert("XSS")</script>'  # XSS payload
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200) 
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("last_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+
+
+
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_admin_edit_form_valid(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        # Perform login with captcha field
+        login_url = reverse('main:login')
+        login_response = self.client.post(login_url, {
+            'username': 'testuser@example.com',
+            'password': 'password123',
+            'g-recaptcha-response': 'test',
+        })
+        self.assertEqual(login_response.status_code, 302)  
+
+
+        edit_url = reverse('main:edit_profile_admin')  
+        response = self.client.get(edit_url)
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.post(edit_url, self.admin_data)
+        self.assertEqual(response.status_code, 302)
+        
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.first_name, 'UpdatedFirstName')
+        self.assertEqual(self.admin.nomor_hp, '089876543210')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_admin_invalid_phone_number(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_admin')
+        
+        # Invalid phone number (too short)
+        invalid_data = self.admin_data.copy()
+        invalid_data['nomor_hp'] = '123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')  
+
+        # Invalid phone number (too long)
+        invalid_data['nomor_hp'] = '12345678901234567890'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+        
+        form = response.context['form'] 
+        self.assertFormError(form, 'nomor_hp', 'Phone number must be 8-16 digits')
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_edit_profile_admin_invalid_names(self, mock_recaptcha):
+        mock_recaptcha.return_value = True
+
+        self.client.login(username='testuser@example.com', password='password123')
+
+        edit_url = reverse('main:edit_profile_admin')
+
+        # Invalid first name (contains number)
+        invalid_data = self.admin_data.copy()
+        invalid_data['first_name'] = 'John123'
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200)
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("first_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        # Invalid last name (contains special characters/code)
+        invalid_data = self.admin_data.copy()
+        invalid_data['last_name'] = '<script>alert("XSS")</script>'  # XSS payload
+
+        response = self.client.post(edit_url, invalid_data)
+        self.assertEqual(response.status_code, 200) 
+
+        form = response.context['form']
+        self.assertEqual(form.errors.get("last_name")[0], "Only letters, spaces, hyphens, apostrophes and periods allowed")
+
+
+
+

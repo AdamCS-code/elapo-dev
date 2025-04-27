@@ -316,19 +316,54 @@ class WorkerEditForm(forms.ModelForm, BaseForm):
             'domicile': forms.Select(attrs={'class': 'form-control'}),
         }
 
-    def clean_first_name(self):
-        return super().clean_generic_text(
-            self.cleaned_data.get('first_name'),
-            "First name",
-            69
-        )
+    first_name = forms.CharField(
+        max_length=69,
+        label='First Name',
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
+    last_name = forms.CharField(
+        max_length=69,
+        label='Last Name',
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
+    nomor_hp = forms.CharField(
+        required=True,
+        max_length=69,
+        label='Nomor HP',
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
+    domicile = forms.ChoiceField(
+        choices=[('', 'domisili kamu')] + domicile_choices, 
+        label='domisili',
+        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
 
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get('first_name')
+        
+        if not re.match(r'^[A-Za-z\s\-\'\.]+$', first_name):
+            raise ValidationError("Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        first_name = super().clean_generic_text(first_name, "First name", 69)
+        first_name = re.sub(r'\d', '', first_name)  # Remove any numbers
+        
+        print("Sanitized first name:", first_name)
+        return first_name
+    
     def clean_last_name(self):
-        return super().clean_generic_text(
-            self.cleaned_data.get('last_name'),
-            "Last name",
-            69
-        )
+        last_name = self.cleaned_data.get('last_name')
+        
+        if not re.match(r'^[A-Za-z\s\-\'\.]+$', last_name):
+            raise ValidationError("Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        last_name = super().clean_generic_text(last_name, "First name", 69)
+        last_name = re.sub(r'\d', '', last_name)  # Remove any numbers
+        
+        print("Sanitized first name:", last_name)
+        return last_name
+
+
+
 
     def clean_nomor_hp(self):
         return super().clean_phone(self.cleaned_data.get('nomor_hp'))
@@ -344,20 +379,54 @@ class CustomerEditForm(forms.ModelForm):
             'nomor_hp': forms.TextInput(attrs={'class': 'form-control'}),
             'domicile': forms.Select(attrs={'class': 'form-control'}),
         }
-        
-    def clean_first_name(self):
-        return super().clean_generic_text(
-            self.cleaned_data.get('first_name'),
-            "First name",
-            69
-        )
+    
+    first_name = forms.CharField(
+        max_length=69,
+        label='First Name',
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
+    last_name = forms.CharField(
+        max_length=69,
+        label='Last Name',
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
+    nomor_hp = forms.CharField(
+        required=True,
+        max_length=69,
+        label='Nomor HP',
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
+    domicile = forms.ChoiceField(
+        choices=[('', 'domisili kamu')] + domicile_choices, 
+        label='domisili',
+        widget=forms.Select(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
 
+    def clean_first_name(self):
+        first_name = self.cleaned_data.get('first_name')
+        
+        if not re.match(r'^[A-Za-z\s\-\'\.]+$', first_name):
+            raise ValidationError("Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        first_name = super().clean_generic_text(first_name, "First name", 69)
+        first_name = re.sub(r'\d', '', first_name)  # Remove any numbers
+        
+        print("Sanitized first name:", first_name)
+        return first_name
+    
     def clean_last_name(self):
-        return super().clean_generic_text(
-            self.cleaned_data.get('last_name'),
-            "Last name",
-            69
-        )
+        last_name = self.cleaned_data.get('last_name')
+        
+        if not re.match(r'^[A-Za-z\s\-\'\.]+$', last_name):
+            raise ValidationError("Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        last_name = super().clean_generic_text(last_name, "First name", 69)
+        last_name = re.sub(r'\d', '', last_name)  # Remove any numbers
+        
+        print("Sanitized first name:", last_name)
+        return last_name
+
+
 
     def clean_nomor_hp(self):
         return super().clean_phone(self.cleaned_data.get('nomor_hp'))
@@ -373,20 +442,48 @@ class AdminEditForm(forms.ModelForm):
             'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'}),
             'nomor_hp': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Phone Number'}),
         }
+    
+    first_name = forms.CharField(
+        max_length=69,
+        label='First Name',
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
+    last_name = forms.CharField(
+        max_length=69,
+        label='Last Name',
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
+    nomor_hp = forms.CharField(
+        required=True,
+        max_length=69,
+        label='Nomor HP',
+        widget=forms.TextInput(attrs={'class': 'w-full px-4 py-3 rounded-lg border border-taupe bg-gray focus:outline-none focus:ring-2 focus:ring-slate focus:border-transparent transition duration-200'})
+    )
+
 
     def clean_first_name(self):
-        return super().clean_generic_text(
-            self.cleaned_data.get('first_name'),
-            "First name",
-            69
-        )
-
+        first_name = self.cleaned_data.get('first_name')
+        
+        if not re.match(r'^[A-Za-z\s\-\'\.]+$', first_name):
+            raise ValidationError("Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        first_name = super().clean_generic_text(first_name, "First name", 69)
+        first_name = re.sub(r'\d', '', first_name)  # Remove any numbers
+        
+        print("Sanitized first name:", first_name)
+        return first_name
+    
     def clean_last_name(self):
-        return super().clean_generic_text(
-            self.cleaned_data.get('last_name'),
-            "Last name",
-            69
-        )
+        last_name = self.cleaned_data.get('last_name')
+        
+        if not re.match(r'^[A-Za-z\s\-\'\.]+$', last_name):
+            raise ValidationError("Only letters, spaces, hyphens, apostrophes and periods allowed")
+        
+        last_name = super().clean_generic_text(last_name, "First name", 69)
+        last_name = re.sub(r'\d', '', last_name)  # Remove any numbers
+        
+        print("Sanitized first name:", last_name)
+        return last_name
 
     def clean_nomor_hp(self):
         return super().clean_phone(self.cleaned_data.get('nomor_hp'))

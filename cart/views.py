@@ -9,8 +9,8 @@ from main.models import Customer
 import json
 
 @login_required
+@permission_required('cart.delete_cart',raise_exception=True)
 @require_POST
-@permission_required('cart.delete_cart')
 def delete_cart(request):
     data = json.loads(request.body)
     id = data['cart_id']
@@ -24,7 +24,7 @@ def delete_cart(request):
 
 @login_required
 @require_POST
-@permission_required('cart.delete_productcart')
+@permission_required('cart.delete_productcart', raise_exception=True)
 def delete_productcart(request):
     data = json.loads(request.body)
     product_cart_id = data['productcart_id']
@@ -37,7 +37,7 @@ def delete_productcart(request):
         return JsonResponse({'error': 'product cart is not found'}, status=400)
 
 @login_required
-@permission_required('cart.view_productcart')
+@permission_required('cart.view_productcart', raise_exception=True)
 def show_cart(request):
     customer = request.user.customer
     if not customer:
@@ -50,7 +50,7 @@ def show_cart(request):
     return render(request, 'show_cart.html', context={'cart_id': str(cart.id), 'is_customer': True})
 
 @login_required
-@permission_required("cart.checkout_cart")
+@permission_required("cart.checkout_cart",raise_exception=True)
 def checkout_cart(request):
     data = json.loads(request.body)
     cart_id = data['cart_id']
@@ -76,7 +76,7 @@ def checkout_cart(request):
     
 
 @login_required
-@permission_required('cart.view_cart')
+@permission_required('cart.view_cart',raise_exception=True)
 def view_cart(request, id):
     try:
         cart = Cart.objects.get(pk=id)
@@ -103,7 +103,7 @@ def view_cart(request, id):
 
 
 @login_required
-@permission_required("cart.change_cart")
+@permission_required("cart.change_cart", raise_exception=True)
 def edit_product_in_cart(request):
     data = json.loads(request.body)
     try:

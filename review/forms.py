@@ -3,6 +3,7 @@ from .models import FraudReport, Review
 import re
 from django.core.exceptions import ValidationError
 from django.utils.html import strip_tags
+from django.utils.html import escape 
 
 class FraudReportForm(forms.ModelForm):
     class Meta:
@@ -18,10 +19,6 @@ class FraudReportForm(forms.ModelForm):
 
     def clean_description(self):
         desc = self.cleaned_data.get('description', '')
-
-        desc = strip_tags(desc)
-
-        desc = re.sub(r'\s+', ' ', desc).strip()
 
         if len(desc) < 10:
             raise ValidationError("Deskripsi terlalu pendek. Harus minimal 10 karakter.")
@@ -53,8 +50,6 @@ class ReviewForm(forms.ModelForm):
 
     def clean_description(self):
         desc = self.cleaned_data.get('description', '')
-        desc = strip_tags(desc)
-        desc = re.sub(r'\s+', ' ', desc).strip()
 
         if len(desc) < 10:
             raise ValidationError("Deskripsi terlalu pendek. Harus minimal 10 karakter.")

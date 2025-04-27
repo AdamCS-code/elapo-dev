@@ -173,5 +173,3 @@ def cancel_order(request, id):
     
     messages.success(request, "Your order has been cancelled successfully.")
     return redirect('order:order_detail', id=id)
-
-

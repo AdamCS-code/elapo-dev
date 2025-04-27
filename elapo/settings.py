@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'core',
     'django_recaptcha',
     'review',
+    'testimony',
+    
 ]
 
 MIDDLEWARE = [

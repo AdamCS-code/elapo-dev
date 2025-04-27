@@ -31,5 +31,6 @@ urlpatterns = [
     path('worker/', include('worker.urls', namespace='worker')),
     path('review/', include('review.urls', namespace='review')),
     path('administrator/', include('administrator.urls', namespace='administrator')),
+    path('testimony/', include('testimony.urls', namespace='testimony')),
 
 ]

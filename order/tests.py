@@ -102,7 +102,6 @@ class OrderViewsTest(TestCase):
     def tearDown(self):
         self.patcher.stop()
 
-'''
     # OWASP TESTS
     def test_broken_access_control_non_owner_cancel(self):
         """Test broken access control: non-owner trying to cancel order"""
@@ -314,4 +313,3 @@ class OrderViewsTest(TestCase):
         # Verify order status has been updated
         self.order.refresh_from_db()
         self.assertEqual(self.order.status, self.cancelled_status)
-'''

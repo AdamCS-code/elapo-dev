@@ -16,4 +16,11 @@ CREATE TABLE IF NOT EXISTS "cart_cart" ("id" char(32) NOT NULL PRIMARY KEY, "cus
 
 CREATE TABLE IF NOT EXISTS "wallet_orderpayment" ("id" char(32) NOT NULL PRIMARY KEY, "created_at" datetime NOT NULL, "order_id" char(32) NOT NULL UNIQUE REFERENCES "order_order" ("id") DEFERRABLE INITIALLY DEFERRED, "walletAccount_id" char(32) NOT NULL REFERENCES "wallet_walletaccount" ("id") DEFERRABLE INITIALLY DEFERRED, "worker_id" bigint NULL REFERENCES "main_worker" ("id") DEFERRABLE INITIALLY DEFERRED, "delivery_fee" decimal NOT NULL);
 
-CREATE TABLE IF NOT EXISTS "main_worker_old" ("id" char(32) NOT NULL PRIMARY KEY, "first_name" varchar(25) NOT NULL, "last_name" varchar(25) NOT NULL, "nomor_hp" varchar(16) NOT NULL, "email" varchar(50) NOT NULL, "domicile" varchar(100) NOT NULL, "user_id" integer NOT NULL UNIQUE REFERENCES "auth_user" ("id") DEFERRABLE INITIALLY DEFERRED, "rating" integer NOT NULL);
+CREATE TABLE IF NOT EXISTS "main_worker" ("id" char(32) NOT NULL PRIMARY KEY, "first_name" varchar(25) NOT NULL, "last_name" varchar(25) NOT NULL, "nomor_hp" varchar(16) NOT NULL, "email" varchar(50) NOT NULL, "domicile" varchar(100) NOT NULL, "user_id" integer NOT NULL UNIQUE REFERENCES "auth_user" ("id") DEFERRABLE INITIALLY DEFERRED, "rating" integer NOT NULL);
+
+INSERT INTO "main_worker" ("id", "first_name", "last_name", "nomor_hp", "email", "domicile", "user_id", "rating")
+VALUES ('7f543528d4fa4fb3830d3c023b24edcf', 'vina', 'garut', '081245658901', 'vina.garut@gmail.com', 'Bogor', 8, 0);
+
+INSERT INTO "main_worker" ("id", "first_name", "last_name", "nomor_hp", "email", "domicile", "user_id", "rating")
+VALUES ('7f744a0318bd4683b834a3e3949ee046', 'adam', 'caldipawell', '081233556859', 'sembiring@gmail.com', 'Bogor', 12, 0);
+

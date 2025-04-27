@@ -118,7 +118,7 @@ class WorkerRegistrationForm(UserCreationForm):
                 email=self.cleaned_data['email'],
                 nomor_hp=self.cleaned_data['nomor_hp']
             )
-            worker.user.groups.set([Group.Objects.get(name='Worker')])
+            worker.user.groups.set([Group.objects.get(name='Worker')])
 
         return user
 

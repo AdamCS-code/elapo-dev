@@ -24,7 +24,6 @@ class WalletAccount(models.Model):
             self.login_attempts = 0
             self.save()
 
-
 class Wallet(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     walletAccount = models.OneToOneField(WalletAccount, on_delete=models.CASCADE)

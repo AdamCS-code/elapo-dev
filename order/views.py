@@ -43,6 +43,7 @@ def show_order(request):
 
 @login_required
 def show_order_admin(request):
+
     if get_user_role(request.user) == 'Admin':
         available_orders = OrderPayment.objects.filter(order__status__status='paid')
         prepared_orders = OrderPayment.objects.filter(order__status__status='prepared')
@@ -54,6 +55,8 @@ def show_order_admin(request):
             'is_admin': True,
         }
         return render(request, 'show_order_admin.html', context)
+    else:
+       return JsonResponse({'message': 'only admin could access this resource!'}, status=400) 
         
 @login_required
 def show_order_worker(request):
@@ -147,10 +150,9 @@ def order_detail(request, id):
 @permission_required('order.set_to_cancelled')
 def cancel_order(request, id):
     order = get_object_or_404(Order, id=id)
-    
+        
     if order.cart.customer != request.user.customer:
-        messages.error(request, "You don't have permission to cancel this order.")
-        return redirect('order:show_order')
+        return JsonResponse({'message' :'You don\'t have permission to cancel this order.' }, status=400)
     
     cancellable_statuses = [
         'not paid',
@@ -158,8 +160,7 @@ def cancel_order(request, id):
     ]
     
     if order.status.status not in cancellable_statuses:
-        messages.error(request, "This order cannot be cancelled at its current status.")
-        return redirect('order:order_detail', id=id)
+        return JsonResponse({'message' :'You don\'t have permission to cancel this order.' }, status=400)
 
     if order.status.id == uuid.UUID(PAID_STATUS_ID):
         update_product(order.cart)

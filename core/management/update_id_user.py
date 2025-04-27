@@ -6,8 +6,6 @@ import sqlite3
 db_path = os.path.expanduser('~/Documents/ilmu komputer/semester 4/pkpl/elapo-developement/db.sqlite3')
 connection = sqlite3.Connection(db_path)
 
-def update_worker():
-    pass
 def update():
     with open('customer.json', 'r') as file:
         customer_data = json.load(file)
@@ -83,7 +81,7 @@ def generate_sql_insert_query_cart():
             cursor.execute(query)
         connection.commit()
         connection.close()
-generate_sql_insert_query_cart()
+
 def generate_sql_insert_query_review():
     with open('review.json', 'r') as file:
         review_data = json.load(file)

@@ -4,7 +4,7 @@ from . import views
 app_name = 'administrator'
 
 urlpatterns = [
-path('dashboard/', views.dashboard, name='dashboard'),
+    path('dashboard/', views.dashboard, name='dashboard'),
     path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
     path('no-permission/', views.no_permission, name='no_permission'),
     path('all_product/', views.all_product, name='all_product'),

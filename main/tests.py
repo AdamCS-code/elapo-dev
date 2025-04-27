@@ -4,8 +4,8 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from unittest.mock import patch
-from main.forms import LoginForm
-from main.models import Customer, Worker
+from main.forms import AdminRegistrationForm, LoginForm
+from main.models import Admin, Customer, Worker
 from django.contrib.messages import get_messages
 from django.contrib.auth.models import Group
 import html
@@ -319,3 +319,53 @@ class ClientSideRegistrationTests(TestCase):
                     self.assertFalse(Customer.objects.filter(email=data['email']).exists())
                 else:
                     self.assertFalse(Worker.objects.filter(email=data['email']).exists())
+
+
+    
+class AdminRegistrationTests(TestCase):
+    def test_successful_admin_creation(self):
+        form_data = {
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'email': 'newadmin@example.com',
+            'nomor_hp': '081234567890',
+            'password1': 'SecurePass123!',
+            'password2': 'SecurePass123!',
+        }
+        
+        form = AdminRegistrationForm(data=form_data)
+        self.assertTrue(form.is_valid())
+
+
+    def test_input_sanitization(self):
+        form_data = {
+            'first_name': '<script>alert("XSS")</script>',
+            'last_name': 'admin',
+            'email': 'validadmin@example.com',
+            'nomor_hp': '+62-856-7745-9090',
+            'password1': 'SecurePass123!',
+            'password2': 'SecurePass123!'
+        }
+
+        form = AdminRegistrationForm(data=form_data)
+
+        if not form.is_valid():
+            print(form.errors)
+        self.assertTrue(form.is_valid())
+        
+        self.assertEqual(form.cleaned_data['first_name'], html.escape('<script>alert("XSS")</script>'))
+        self.assertEqual(form.cleaned_data['nomor_hp'], '6285677459090') 
+
+    def test_password_mismatch(self):
+        form_data = {
+            'first_name': 'John',
+            'last_name': 'Doe',
+            'email': 'otheradmin@example.com',
+            'nomor_hp': '081234567890',
+            'password1': 'SecurePass123!',
+            'password2': 'DifferentPass123!',
+        }
+        
+        form = AdminRegistrationForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertEqual(form.errors['password2'][0], "The two password fields didn’t match.")

@@ -67,8 +67,6 @@ class AdminRegistrationForm(UserCreationForm, BaseForm):
         label='Nomor HP',
         widget=forms.TextInput(attrs={'class': 'form-input'})
     )
-
-    recaptcha = ReCaptchaField(widget = ReCaptchaV2Checkbox())   
    
     def check_email(self):
         email = self.cleaned_data['email']
@@ -97,14 +95,12 @@ class AdminRegistrationForm(UserCreationForm, BaseForm):
         return user
 
     def clean_first_name(self):
-        first_name = super().clean_generic_text(
+        print(self.cleaned_data.get('first_name'))
+        return super().clean_generic_text(
             self.cleaned_data.get('first_name'),
             "First name",
             69
         )
-        if not re.match(r'^[A-Za-z\s\-\'\.]+$', first_name):
-            raise ValidationError("Only letters, spaces, hyphens, apostrophes and periods allowed")
-        return first_name
 
     def clean_last_name(self):
         last_name = super().clean_generic_text(
@@ -112,8 +108,6 @@ class AdminRegistrationForm(UserCreationForm, BaseForm):
             "Last name",
             69
         )
-        if not re.match(r'^[A-Za-z\s\-\'\.]+$', last_name):
-            raise ValidationError("Only letters, spaces, hyphens, apostrophes and periods allowed")
         return last_name
 
     def clean_email(self):

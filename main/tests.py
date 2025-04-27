@@ -18,7 +18,8 @@ class LoginTests(TestCase):
         self.client = Client()
         cache.clear()
 
-    def test_rate_limiting_on_failed_logins(self):
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_rate_limiting_on_failed_logins(self, mock_recaptcha):
         login_url = reverse('main:login')
         
         for i in range(5):

@@ -38,7 +38,7 @@ class TestimonyViewsTest(TestCase):
     def test_create_testimony_get(self):
         """Test that the create testimony page loads correctly"""
         self.client.login(username='testuser1', password='12345')
-        url = reverse('create_testimony', args=[str(self.product1.pk)])
+        url = reverse('testimony:create_testimony', args=[str(self.product1.pk)])
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, 200)
@@ -48,7 +48,7 @@ class TestimonyViewsTest(TestCase):
     def test_create_testimony_post_success(self):
         """Test successful testimony creation"""
         self.client.login(username='testuser1', password='12345')
-        url = reverse('create_testimony', args=[str(self.product1.pk)])
+        url = reverse('testimony:create_testimony', args=[str(self.product1.pk)])
         
         data = {
             'message': 'This is a test testimony',
@@ -71,7 +71,7 @@ class TestimonyViewsTest(TestCase):
     def test_create_testimony_post_invalid_form(self):
         """Test testimony creation with invalid form data"""
         self.client.login(username='testuser1', password='12345')
-        url = reverse('create_testimony', args=[str(self.product1.pk)])
+        url = reverse('testimony:create_testimony', args=[str(self.product1.pk)])
         
         # Missing required rating field
         data = {
@@ -94,7 +94,7 @@ class TestimonyViewsTest(TestCase):
     def test_create_testimony_xss_sanitization(self):
         """Test that XSS input is properly sanitized"""
         self.client.login(username='testuser1', password='12345')
-        url = reverse('create_testimony', args=[str(self.product1.pk)])
+        url = reverse('testimony:create_testimony', args=[str(self.product1.pk)])
         
         xss_script = '<script>alert("XSS")</script>'
         data = {
@@ -115,7 +115,7 @@ class TestimonyViewsTest(TestCase):
     def test_edit_testimony_get(self):
         """Test that the edit testimony page loads correctly"""
         self.client.login(username='testuser1', password='12345')
-        url = reverse('edit_testimony', args=[str(self.testimony1.pk)])
+        url = reverse('testimony:edit_testimony', args=[str(self.testimony1.pk)])
         response = self.client.get(url)
         
         self.assertEqual(response.status_code, 200)
@@ -125,7 +125,7 @@ class TestimonyViewsTest(TestCase):
     def test_edit_testimony_post_success(self):
         """Test successful testimony editing"""
         self.client.login(username='testuser1', password='12345')
-        url = reverse('edit_testimony', args=[str(self.testimony1.pk)])
+        url = reverse('testimony:edit_testimony', args=[str(self.testimony1.pk)])
         
         updated_message = 'Updated testimony message'
         data = {
@@ -152,7 +152,7 @@ class TestimonyViewsTest(TestCase):
         """Test testimony editing by unauthorized user"""
         # Login as user2 (who did not create the testimony)
         self.client.login(username='testuser2', password='12345')
-        url = reverse('edit_testimony', args=[str(self.testimony1.pk)])
+        url = reverse('testimony:edit_testimony', args=[str(self.testimony1.pk)])
         
         response = self.client.get(url)
         
@@ -167,7 +167,7 @@ class TestimonyViewsTest(TestCase):
     def test_delete_testimony_success(self):
         """Test successful testimony deletion"""
         self.client.login(username='testuser1', password='12345')
-        url = reverse('delete_testimony', args=[str(self.testimony1.pk)])
+        url = reverse('testimony:delete_testimony', args=[str(self.testimony1.pk)])
         
         response = self.client.post(url)
         
@@ -186,7 +186,7 @@ class TestimonyViewsTest(TestCase):
         """Test testimony deletion by unauthorized user"""
         # Login as user2 (who did not create the testimony)
         self.client.login(username='testuser2', password='12345')
-        url = reverse('delete_testimony', args=[str(self.testimony1.pk)])
+        url = reverse('testimony:delete_testimony', args=[str(self.testimony1.pk)])
         
         response = self.client.post(url)
         
@@ -209,7 +209,7 @@ class TestimonyViewsTest(TestCase):
             from unittest.mock import patch
             with patch('testimony.views.get_user_role', return_value='Customer'):
                 self.client.login(username='testuser1', password='12345')
-                url = reverse('my_testimony')
+                url = reverse('testimony:my_testimony')
                 
                 response = self.client.get(url)
                 
@@ -226,7 +226,7 @@ class TestimonyViewsTest(TestCase):
             from unittest.mock import patch
             with patch('testimony.views.get_user_role', return_value='Staff'):
                 self.client.login(username='testuser1', password='12345')
-                url = reverse('my_testimony')
+                url = reverse('testimony:my_testimony')
                 
                 response = self.client.get(url)
                 
@@ -236,3 +236,32 @@ class TestimonyViewsTest(TestCase):
                     str(response.content, encoding='utf8'),
                     {'message': 'Anda tidak bisa melihat testimoni karena bukan customer.'}
                 )
+
+    def test_sql_injection_in_product_id(self):
+        """Test SQL injection in product_id parameter during testimony creation"""
+        # Attempt simple SQL Injection in URL
+        response = self.client.get(f'/testimony/create/1 OR 1=1')
+        # URL resolver should reject it
+        self.assertEqual(response.status_code, 404)
+
+    def test_csrf_protection_on_create_testimony(self):
+        """Test CSRF protection on create testimony POST"""
+        client = Client(enforce_csrf_checks=True)
+        client.login(username='customer', password='password123')
+        
+        url = reverse('testimony:create_testimony', kwargs={'product_id': self.product1.id})
+        # POST tanpa CSRF token
+        response = client.post(url, data={'message': 'Test CSRF attack'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_ssrf_attempt_by_header_manipulation(self):
+        """Test SSRF attempt by manipulating headers on viewing testimonies"""
+        url = reverse('testimony:my_testimony')
+        response = self.client.get(
+            url,
+            HTTP_HOST='evil-site.com',
+            HTTP_REFERER='http://evil-site.com'
+        )
+    
+        self.assertEqual(response.status_code, 400)
+

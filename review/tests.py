@@ -267,7 +267,33 @@ class FraudReportViewsTest(TestCase):
         response = self.client.post(url)
         self.assertEqual(response.status_code, 404)
 
+    def test_sql_injection_in_order_id(self):
+        """Test SQL injection in order_id parameter during report creation"""
+        # Attempt simple SQL Injection in URL
+        response = self.client.get(f'/review/report-fraud/1 OR 1=1')
+        # URL resolver should reject it
+        self.assertEqual(response.status_code, 404)
 
+    def test_csrf_protection_on_create_report(self):
+        """Test CSRF protection on create report POST"""
+        client = Client(enforce_csrf_checks=True)
+        client.login(username='customer', password='password123')
+        
+        url = reverse('review:report_fraud', kwargs={'order_id': self.order1.id})
+        # POST tanpa CSRF token
+        response = client.post(url, data={'message': 'Test CSRF attack'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_ssrf_attempt_by_header_manipulation(self):
+        """Test SSRF attempt by manipulating headers on viewing report"""
+        url = reverse('review:my_report')
+        response = self.client.get(
+            url,
+            HTTP_HOST='evil-site.com',
+            HTTP_REFERER='http://evil-site.com'
+        )
+    
+        self.assertEqual(response.status_code, 400)
 
 
 class ReviewViewsTest(TestCase):
@@ -591,3 +617,31 @@ class ReviewViewsTest(TestCase):
         # Should return 404 Not Found
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
+
+    def test_sql_injection_in_order_id(self):
+        """Test SQL injection in order_id parameter during review creation"""
+        # Attempt simple SQL Injection in URL
+        response = self.client.get(f'/review/create-review/1 OR 1=1')
+        # URL resolver should reject it
+        self.assertEqual(response.status_code, 404)
+
+    def test_csrf_protection_on_create_review(self):
+        """Test CSRF protection on create report POST"""
+        client = Client(enforce_csrf_checks=True)
+        client.login(username='customer', password='password123')
+        
+        url = reverse('review:create_review', kwargs={'order_id': self.order1.id})
+        # POST tanpa CSRF token
+        response = client.post(url, data={'message': 'Test CSRF attack'})
+        self.assertEqual(response.status_code, 403)
+
+    def test_ssrf_attempt_by_header_manipulation(self):
+        """Test SSRF attempt by manipulating headers on viewing review"""
+        url = reverse('review:my_review')
+        response = self.client.get(
+            url,
+            HTTP_HOST='evil-site.com',
+            HTTP_REFERER='http://evil-site.com'
+        )
+    
+        self.assertEqual(response.status_code, 400)

@@ -1,6 +1,8 @@
 from django.urls import path
 from .views import *
 
+app_name = 'testimony'
+
 urlpatterns = [
     path("create-testimony/<uuid:product_id>/", create_testimony, name="create_testimony"),
     path("my-testimony/", get_testimony, name="my_testimony"),

@@ -66,11 +66,7 @@ class AdminRegistrationForm(UserCreationForm, BaseForm):
         max_length=69,
         label='Nomor HP',
         widget=forms.TextInput(attrs={'class': 'form-input'})
-<<<<<<< HEAD
     )
-=======
-    )  
->>>>>>> 0e3c492719607cb1b5c26505fcb3543773e622dc
    
     def check_email(self):
         email = self.cleaned_data['email']

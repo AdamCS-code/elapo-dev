@@ -26,7 +26,7 @@ class BaseForm:
         if len(cleaned) > 255:
             raise ValidationError("Email cannot exceed 255 characters")
         if not re.match(r'^[\w\.-]+@[\w\.-]+\.\w+$', cleaned):
-            raise ValidationError("Invalid email format")
+            raise ValidationError("Enter a valid email address.")
         return cleaned
 
     def clean_phone(self, phone):

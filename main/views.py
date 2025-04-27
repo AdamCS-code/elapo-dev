@@ -112,6 +112,8 @@ def customer_register(request):
             messages.success(request, 'Customer berhasil ditambahkan, silahkan login ya')
             return redirect('main:login')
         else:
+            print(request.POST)
+            # print("error: " + str(form.errors))
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:
         form = CustomerRegistrationForm()
@@ -129,6 +131,8 @@ def worker_register(request):
             except IntegrityError:
                 messages.error(request, 'Username sudah terdaftar, silakan pilih username lain.')
         else:
+            print(request.POST)
+            # print("error: " + str(form.errors))
             messages.error(request, 'Terjadi Kesalahan. Silahkan coba lagi nanti.')
     else:
         form = WorkerRegistrationForm() 

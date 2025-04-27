@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.cache import cache
 from unittest.mock import patch
+from main.forms import LoginForm
 
 class LoginTests(TestCase):
     @classmethod
@@ -49,3 +50,28 @@ class LoginTests(TestCase):
         
         self.assertEqual(response.status_code, 302)
         self.assertRedirects(response, reverse('main:home'))
+
+    @patch('django_recaptcha.fields.ReCaptchaField.validate')
+    def test_login_with_invalid_email_format(self, mock_recaptcha):
+        """Test login with malformed email addresses"""
+        invalid_emails = [
+            'testuser',
+            'test@user',
+            'testuser@.com',
+            '@testuser.com',
+            'test user@email.com',
+            '<script>alert("XSS")</script>@testuser.com',
+            'attacker@example.com\nBCC: victim@example.com'
+        ]
+        
+        for email in invalid_emails:
+            with self.subTest(email=email):
+                form = LoginForm(data={
+                    'username': email,
+                    'password': 'testpass123',
+                    'g-recaptcha-response': 'test',
+                })
+                self.assertFalse(form.is_valid())
+                self.assertIn('username', form.errors)
+                self.assertEqual(form.errors['username'][0], "Enter a valid email address.")
+

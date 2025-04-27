@@ -102,18 +102,6 @@ def order_detail(request, id):
     order = Order.objects.get(pk=id)
     product_carts = ProductCart.objects.filter(cart=order.cart)
 
-    role = get_user_role(request,user)
-    if role == 'Customer':
-        if order.cart.customer != request.user.customer:
-            return JsonResponse({'message': 'you are not belong to this order'}, status=400)
-    elif role == 'Worker':
-        try:
-            worker = OrderPayment.objects.get(order=order).worker
-            if worker != request.user.worker:
-                return JsonResponse({'message': 'you are not belong to this order'}, status=400)
-        except Orderpayment.DoesNotExist:
-            return JsonResponse({'message': 'you are not belong this order'}, status=400)
-
     product_carts_json = [
         {
             'product' : {
@@ -164,7 +152,7 @@ def cancel_order(request, id):
     if order.status.id == uuid.UUID(PAID_STATUS_ID):
         update_product(order.cart)
         wallet = Wallet.objects.get(walletAccount__user = request.user)
-        update_wallet_ballance(wallet, wallet.saldo+order.total)
+        update_wallet_ballance(wallet, wallet.saldo+order.product_cost)
 
     cancelled_status = OrderStatus.objects.get(id='88888888888888888888888888888888')
     order.status = cancelled_status
@@ -172,5 +160,3 @@ def cancel_order(request, id):
     
     messages.success(request, "Your order has been cancelled successfully.")
     return redirect('order:order_detail', id=id)
-
-

@@ -1,0 +1,21 @@
+{% extends 'main.html' %}
+
+{% block content %}
+<div class="container py-5 d-flex justify-content-center">
+  <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
+    <h2 class="text-center mb-4">Edit Profile</h2>
+    <form method="post">
+      {% csrf_token %}
+      
+      <div class="mb-3">
+        {{ form.as_p }}
+      </div>
+
+      <div class="d-flex justify-content-between mt-4">
+        <button type="submit" class="btn btn-primary w-48">Save Changes</button>
+        <a href="{% url 'worker:profile' %}" class="btn btn-outline-secondary w-48">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Rate Limit Exceeded</title>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="alert alert-danger text-center">
+            <h2>Too Many Requests</h2>
+            <p>You've exceeded the rate limit. Please try again later.</p>
+            <p id="countdown-message">
+                You can retry in <span id="countdown">{{ retry_after|default:"60" }}</span> seconds.
+            </p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const countdownEl = document.getElementById('countdown');
+            const messageEl = document.getElementById('countdown-message');
+            
+            let seconds = parseInt(countdownEl.textContent) || 60;
+            
+            const timer = setInterval(() => {
+                seconds--;
+                countdownEl.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(timer);
+                    messageEl.innerHTML = 'Please refresh the page';
+                    
+                    messageEl.innerHTML += `
+                        <button onclick="window.location.reload()" 
+                                class="btn btn-sm btn-success ms-2">
+                            Refresh Now
+                        </button>`;
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -5,8 +5,8 @@ app_name = "worker"
 
 urlpatterns = [
     path('complete-order/<uuid:id>', complete_order, name='complete_order' ),
-    path("order-complete-page/", order_complete_page, name="order-complete-page"),
-    path("complete-order-status/", complete_order_status, name="complete-order-status"),
+    path("order-complete-page/", order_complete_page, name="order_complete_page"),
+    path("complete-order-status/<uuid:pk>", complete_order_status, name="complete_order_status"),
     path("take-order-status/<uuid:pk>/", take_order_status, name="take_order_status"),
     path("", worker_homepage, name="homepage"),
     path("profile/", worker_profile_page, name="profile"),

@@ -55,7 +55,10 @@ def show_main_page(request):
         print('not customer')
     try:
         worker = request.user.worker
-        available_orders = Order.objects.filter(worker__isnull=True)
+        if worker.available:
+            available_orders = Order.objects.filter(worker__isnull=True)
+        else:
+            available_orders = []
         print("AVAILABLE ORDERS")
         print(available_orders)
 

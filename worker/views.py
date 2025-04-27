@@ -74,7 +74,7 @@ def take_order_status(request, pk):
 
                     if order.worker is not None:
                         messages.error(request, "This order has already been taken by someone else.")
-                        return redirect("worker:homepage")
+                        return redirect("main:home")
 
                     order.set_worker(worker)
                     order.status = OrderStatus.objects.filter(status='delivered').first()
@@ -107,6 +107,7 @@ def take_order_status(request, pk):
 @worker_required
 def complete_order_status(request, pk):
     if request.method == "POST":
+        print("POST")
         user = request.user
         order_id = pk
 
@@ -119,14 +120,15 @@ def complete_order_status(request, pk):
             return redirect("main:home")
 
         if order.worker.user_id == worker.user_id:
-            order.status = OrderStatus.objects.filter('completed').first()
-            order.status.save()
+            completed_status = OrderStatus.objects.get(status='completed')
+            order.status = completed_status  
+            worker.available = True
+            order.save()
+            worker.save()  
+            return redirect("worker:order_complete_page")
         else:
+            print("NOT COMPLETED")
             return HttpResponseForbidden("You are not authorized to complete this order")
-
-        worker.available = True
-        order.save()
-        return redirect("worker:order-complete-page")
     
     else:
         messages.error(request, "Invalid request method")

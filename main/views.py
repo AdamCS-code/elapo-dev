@@ -91,10 +91,6 @@ def show_register(request):
 def login(request):
     if request.method == 'POST':
         form = LoginForm(data=request.POST)
-        try:
-            form.clean()
-        except Exception as e:
-            print(f"Clean method failed: {e}")
         
         if form.is_valid():
             user = form.get_user()

@@ -165,7 +165,7 @@ def cancel_order(request, id):
     if order.status.id == uuid.UUID(PAID_STATUS_ID):
         update_product(order.cart)
         wallet = Wallet.objects.get(walletAccount__user = request.user)
-        update_wallet_ballance(wallet, wallet.saldo+order.product_cost)
+        update_wallet_ballance(wallet, wallet.saldo + order.total)
 
     cancelled_status = OrderStatus.objects.get(id='88888888888888888888888888888888')
     order.status = cancelled_status

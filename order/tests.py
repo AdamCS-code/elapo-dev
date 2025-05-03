@@ -20,10 +20,10 @@ class OrderViewsTest(TestCase):
         self.customer_group = Group.objects.create(name='Customer')
         
         # Create user roles
-        self.admin_user = User.objects.create_user(username='admin', email='admin@example.com', password='password123')
-        self.worker_user = User.objects.create_user(username='worker', email='worker@example.com', password='password123')
-        self.customer_user = User.objects.create_user(username='customer', email='customer@example.com', password='password123')
-        self.other_customer_user = User.objects.create_user(username='other_customer', email='other@example.com', password='password123')
+        self.admin_user = User.objects.create_user(first_name="admin", last_name="user", username='admin', email='admin@example.com', password='password123')
+        self.worker_user = User.objects.create_user(first_name="worker", last_name="user", username='worker', email='worker@example.com', password='password123')
+        self.customer_user = User.objects.create_user(first_name="customer", last_name="user", username='customer', email='customer@example.com', password='password123')
+        self.other_customer_user = User.objects.create_user(first_name="other", last_name="user", username='other_customer', email='other@example.com', password='password123')
         
         # Assign users to groups
         self.admin_user.groups.add(self.admin_group)
@@ -45,17 +45,18 @@ class OrderViewsTest(TestCase):
         self.cancelled_status = OrderStatus.objects.create(id=uuid.UUID('88888888888888888888888888888888'), status='cancelled')
         
         # Create customer instances
-        self.customer = Customer.objects.create(user=self.customer_user)
-        self.other_customer = Customer.objects.create(user=self.other_customer_user)
+
+        self.customer = Customer.objects.create(nomor_hp="082154643222", user=self.customer_user, first_name="customer", last_name="user")
+        self.other_customer = Customer.objects.create(nomor_hp="082154643211", user=self.other_customer_user, first_name="other", last_name="user")
 
         self.customer.user.user_permissions.add(Permission.objects.get(codename='set_to_cancelled', content_type__app_label='order'))
         self.other_customer.user.user_permissions.add(Permission.objects.get(codename='set_to_cancelled', content_type__app_label='order'))
 
         # Create worker instance
-        self.worker = Worker.objects.create(user=self.worker_user)
+        self.worker = Worker.objects.create(nomor_hp="082154643215", user=self.worker_user, first_name="worker", last_name="user")
         
         # Create admin instance
-        self.admin = Admin.objects.create(user=self.admin_user)
+        self.admin = Admin.objects.create(nomor_hp="082154643212", user=self.admin_user,  first_name="admin", last_name="user")
 
         # Create cart for admin #1 test case 
         self.cart = Cart.objects.create(customer=self.customer)

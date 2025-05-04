@@ -7,3 +7,4 @@ urllib3
 django-cors-headers
 django-recaptcha
 dotenv
+bs4

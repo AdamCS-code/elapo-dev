@@ -19,12 +19,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
-load_dotenv()
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = True
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
-
+SECRET_KEY = os.environ.get("PODS_DEBUG", "django-insecure-k1fvhy8q6abe2-fq6p4o3y%7&sq4d0#s)@y^zs-%kxfhzzf(+6")
+DEBUG = os.environ.get("PODS_DEBUG", "true").lower() == "true" 
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 
@@ -59,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'elapo.urls'
@@ -91,6 +90,23 @@ DATABASES = {
     }
 }
 
+# Use PostgreSQL if all required environment variables are set
+if all(os.environ.get(var) for var in [
+    'DB_HOST', 'DB_NAME', 
+    'DB_PASSWORD', 'DB_PORT', 
+    'DB_USERNAME'
+]):
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',  # Using psycopg2 driver specifically
+        'NAME': os.environ['DB_NAME'],
+        'USER': os.environ['DB_USERNAME'],
+        'PASSWORD': os.environ['DB_PASSWORD'],
+        'HOST': os.environ['DB_HOST'],
+        'PORT': int(os.environ['DB_PORT']),
+        'OPTIONS': {
+            'options': '-c search_path=public',  # Optional schema settings
+        }
+    }
 
 # Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
@@ -127,9 +143,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 

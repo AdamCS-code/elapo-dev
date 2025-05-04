@@ -1,0 +1,112 @@
+{% extends 'main.html' %}
+{% block content %}
+<div class="form-container">
+  <h2>Buat Produk Baru</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Simpan Produk</button>
+  </form>
+
+  <div class="button-group">
+    <a href="{% url 'administrator:product_dashboard' %}" class="btn btn-secondary">
+      Dashboard Produk
+    </a>
+    <a href="{% url 'administrator:dashboard' %}" class="btn btn-secondary">
+      Dashboard
+    </a>
+  </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+  .form-container {
+    max-width: 600px;
+    margin: 40px auto;
+    background-color: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  }
+
+  .form-container h2 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  form p {
+    margin-bottom: 15px;
+  }
+
+  form label {
+    font-weight: 500;
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  form input[type="text"],
+  form input[type="number"],
+  form textarea,
+  form select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+  }
+
+  form input:focus,
+  form textarea:focus,
+  form select:focus {
+    border-color: #4a6cf7;
+    outline: none;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border: none;
+    margin-top: 10px;
+  }
+
+  .btn-primary {
+    background-color: #4a6cf7;
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: #3b5fe8;
+  }
+
+  .btn-secondary {
+    background-color: #e5e7eb;
+    color: #374151;
+  }
+
+  .btn-secondary:hover {
+    background-color: #d1d5db;
+  }
+
+  .button-group {
+    margin-top: 30px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+  }
+</style>
+{% endblock %}

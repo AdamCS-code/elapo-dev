@@ -1,0 +1,49 @@
+{% extends 'main.html' %}
+{% block content %}
+
+<!-- Logout Button (Top Right) -->
+<div class="container-fluid py-3">
+  <div class="d-flex justify-content-end">
+    <form action="{% url 'main:logout' %}" method="post">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger">
+        <i class="fas fa-sign-out-alt me-2"></i>Logout
+      </button>
+    </form>
+  </div>
+</div>
+
+
+<!-- Messages -->
+{% if messages %}
+  <div class="w-100 mb-4" style="max-width: 500px;">
+    {% for message in messages %}
+      <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+<div class="container py-5 d-flex justify-content-center">
+  <div class="card shadow p-4" style="max-width: 500px; width: 100%;">
+    <h1 class="text-center mb-4">Worker Profile</h1>
+    <ul class="list-unstyled mb-4">
+      <li><strong>First Name:</strong> {{ worker.first_name }}</li>
+      <li><strong>Last Name:</strong> {{ worker.last_name }}</li>
+      <li><strong>Email:</strong> {{ worker.email }}</li>
+      <li><strong>Phone Number:</strong> {{ worker.nomor_hp }}</li>
+      <li><strong>Domicile:</strong> {{ worker.domicile }}</li>
+      <li><strong>Rating:</strong> {{ worker.rating }}</li>
+    </ul>
+    <div class="d-flex justify-content-between">
+      <a href="{% url 'main:home' %}" class="btn btn-outline-success w-48">← Back to Home</a>
+      <a href="{% url 'main:edit_profile' %}" class="btn btn-primary w-48">Edit Profile</a>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

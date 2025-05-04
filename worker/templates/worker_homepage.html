@@ -1,0 +1,54 @@
+{% extends 'main.html' %}
+
+{% block content %}
+{% if messages %}
+<div class="container mt-3">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main Content -->
+<div class="container">
+<h1>Welcome, Worker!</h1>
+<p>You'll see available orders here when they come in.</p>
+
+<!-- Available Orders -->
+<div>
+  <h2>Available Orders</h2>
+  {% if worker.available %}
+    {% if orders %}
+      <div class="row">
+        {% for order in orders %}
+          <div class="col-md-4">
+            <div class="order-card">
+              <p><strong>Customer:</strong> {{ order.customer.user.username }}</p>
+              <p><strong>Delivery Fee:</strong> Rp{{ order.delivery_fee }}</p>
+              <a href="{% url 'worker:take_order_status' order.order_id %}">
+                <button class="btn btn-primary">View Details</button>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no-orders-message">
+        <p>No orders available at the moment. Please wait...</p>
+      </div>
+    {% endif %}
+  {% else %}
+    <p>You're currently not available to receive orders.</p>
+  {% endif %}
+</div>
+</div>
+
+
+</div>
+
+{% endblock content %}

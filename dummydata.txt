@@ -1,0 +1,51 @@
+Product
+(id product_name price description stock) 
+('3282910e-54ff-41fe-be6e-4b1a96160145' 'air mineral' '10000' '100' 'minuman aslidari afrika')
+
+ProductCart
+(id cart_id product_id quantity )
+('45e72a93-6cbc-4951-b57f-2aa076543b09' 'c94f92ab-49bf-475d-85b3-fb2f5846da8f' '3282910e-54ff-41fe-be6e-4b1a96160145' 10)
+
+Cart
+(id created_at customer_id)
+('c94f92ab-49bf-475d-85b3-fb2f5846da8f' datetime.date(2025, 4, 6) 2)
+
+Order
+(id cart_id total created_at status_id)
+('11111111-2222-3333-4444-555555555555' 'c94f92ab-49bf-475d-85b3-fb2f5846da8f' datetime.date(2025, 4, 6) '11111111-1111-1111-1111-111111111111')
+
+Wallet
+(id walletAccount_id saldo)
+('88de71fc-21d2-41fe-9b1d-c64d931e91aa' '88de71fc-21d2-41fe-9b1d-c64d931e91aa' 1000000)
+('8293ecbb-97fe-40a0-9acb-ccd3a58feeab' '0b5fb493-31d5-4de7-9051-54fcd30c78ea' 1000000)
+('b8b111a6-3745-4b1f-b55b-b523b84f4946' '18b30555-f6ce-4420-9eaf-f6ee8ea7163c' 1000000)
+
+WalletAccount
+(id user pin)
+('88de71fc-21d2-41fe-9b1d-c64d931e91aa' 9 '123456')
+('0b5fb493-31d5-4de7-9051-54fcd30c78ea' 11 '123456')
+('18b30555-f6ce-4420-9eaf-f6ee8ea7163c' 10 '123456')
+
+User
+(id password username email ...)
+( 9 papua1000 user.admin user.admin@gmail.com)
+(11 papua1000 user.customer user.customer@gmail.com)
+(10 papua1000 user.worker user.worker@gmail.com)
+
+Admin
+(id user_id)
+('88de71fc-21d2-41fe-9b1d-c64d931e91aa', 9)
+
+Customer
+(id user_id)
+('0b5fb493-31d5-4de7-9051-54fcd30c78ea', 11)
+
+Worker
+(id user_id)
+('18b30555-f6ce-4420-9eaf-f6ee8ea7163c' 10)
+
+connected to table customer:
+- main_customer
+- cart_cart
+- review_review
+- review_fraudreport

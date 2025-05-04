@@ -1,0 +1,15 @@
+{% extends "main.html" %}
+
+{% block title%}Order {% endblock title%}
+
+{% block content %}
+
+{% if is_customer %}
+{% include 'show_order_customer.html' %}
+{% elif is_worker %}
+{% include 'show_order_worker.html' %}
+{% elif is_admin %}
+{% include 'show_order_admin.html' %}
+{% endif %}
+
+{% endblock content%}

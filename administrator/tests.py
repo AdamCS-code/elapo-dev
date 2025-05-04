@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-from django.test import TestCase
-
-# Create your tests here.
-=======
 from django import forms
 from django.test import TestCase, Client
 from django.urls import reverse
@@ -275,4 +270,3 @@ class AdminViewsTestCase(TestCase):
         if stock is not None and stock < 0:
             raise forms.ValidationError("Stock cannot be negative")
         return stock
->>>>>>> unittest

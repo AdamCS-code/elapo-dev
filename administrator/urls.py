@@ -1,11 +1,4 @@
 from django.urls import path
-<<<<<<< HEAD
-from .views import dashboard
-
-urlpatterns = [
-    path('dashboard/', dashboard, name='dashboard'),
-]
-=======
 from . import views
 
 app_name = 'administrator'
@@ -23,4 +16,3 @@ urlpatterns = [
     path('product_dashboard/', views.product_dashboard, name='product_dashboard')
 ]
 
->>>>>>> unittest

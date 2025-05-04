@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-from django.shortcuts import render
-from django.contrib.auth.models import User
-
-def dashboard(request):
-    total_users = User.objects.count()
-    return render(request, 'admin_panel/dashboard.html', {'total_users': total_users})
-=======
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
@@ -151,4 +143,3 @@ def process_order(request, order_id):
     order.status = OrderStatus.objects.filter(status='ready').first()
     order.save()
     return redirect("order:order_detail", id=order_id)
->>>>>>> unittest
